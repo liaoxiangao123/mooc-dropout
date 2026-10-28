@@ -1,6 +1,6 @@
 # reports/ 索引
 
-这个目录有 29 个条目、10 份实验报告，其中**只有 4 份是手写**，其余 6 份由脚本重写。
+这个目录有 32 个条目、13 份实验报告，其中**只有 5 份是手写**，其余 8 份由脚本重写。
 读之前先看这张表，避免两种情况：把过期的自动产物当结论引用；或者手改了某个文件，下次跑脚本又被覆盖。
 
 ## 一、实验报告（按论文顺序）
@@ -16,16 +16,20 @@
 | 5.9.7 | E14 多种子重复 | `真实数据多种子重复.md` | **手写**（含两次 OOM 的执行记录） | `multiseed/{official,early}/` |
 | 5.10.4 | E9 调参搜索 | `调参实验-E9.md` | 自动（`scripts/tune.py`） | `optuna/trials.csv`、`optuna/best_params.json` |
 | 5.10.4 | E9b 调参验证 | `调参验证-E9b.md` | 自动（`scripts/validate_tuning.py`） | `optuna/best_params.json` |
+| 5.10.5 | E15 真实数据调参 | `真实数据调参-E15.md` | **手写**（协议 + 两张表 + 五点结论 + 执行记录） | `optuna/realdata/`、`调参实验-E9-真实数据.md`、`调参验证-E9b-真实数据.md` |
+| 5.10.5 | E15 搜索明细 | `调参实验-E9-真实数据.md` | 自动（`scripts/tune.py --tag realdata`） | `optuna/realdata/trials.csv` |
+| 5.10.5 | E15b 测试集验证 | `调参验证-E9b-真实数据.md` | 自动（`scripts/validate_tuning.py`） | `optuna/realdata/best_params.json` |
 | 2.4 / 5.1 | 测试覆盖率 | `覆盖率报告.md` | **手写**（数据来自 `pytest --cov`） | 运行 `pytest --cov=mooc_dropout --cov-report=term-missing` 复现 |
 
-手写报告共 4 份：`实验记录-合成数据.md`、`真实数据五基线对比.md`、`真实数据多种子重复.md`、
-`覆盖率报告.md`。**其余 6 份 md 全部由脚本重写，要改内容先改脚本。**
+手写报告共 5 份：`实验记录-合成数据.md`、`真实数据五基线对比.md`、`真实数据多种子重复.md`、
+`真实数据调参-E15.md`、`覆盖率报告.md`。**其余 8 份 md 全部由脚本重写，要改内容先改脚本。**
 
 ## 二、原始数据与中间产物
 
 | 路径 | 内容 | 谁写的 |
 |---|---|---|
-| `optuna/` | E9 的 trial 明细、最优参数、Optuna study 数据库 | `scripts/tune.py` |
+| `optuna/` | E9（合成数据）的 trial 明细、最优参数、Optuna study 数据库 | `scripts/tune.py` |
+| `optuna/realdata/` | E15（真实数据）的 trial 明细、最优参数、study 数据库；与合成数据那套**不共用 study.db** | `scripts/tune.py --tag realdata` |
 | `realdata_official/`、`realdata_early/` | E13 两口径的 `metrics.json` 与 `compare/`（每模型一行） | `scripts/run_experiments.py --label-file` |
 | `multiseed/official/`、`multiseed/early/` | E14 的 `raw.csv`（逐种子逐配置）、`summary.csv`、`paired.csv` | `scripts/multiseed_realdata.py` → `scripts/collect_multiseed.py` |
 | `exp_*.csv` | 合成数据各实验的原始表（论文中所有合成数据数字的来源） | `run_experiments.py` / `run_extra_experiments.py` |
@@ -60,6 +64,11 @@ python scripts/multiseed_realdata.py --tag early \
     --label-file data/processed/enrollment_early.csv --seeds 42 7 2024 1234 3407
 python scripts/collect_multiseed.py
 python scripts/plot_multiseed_realdata.py
+
+# 真实数据 E15 / E15b（约 51 + 12 分钟；产物落在 optuna/realdata/，不覆盖合成数据那套）
+python scripts/tune.py --data-dir data/raw/kdd2015 --tag realdata --trials 20 --timeout 5400
+python scripts/validate_tuning.py --data-dir data/raw/kdd2015 \
+    --params reports/optuna/realdata/best_params.json
 ```
 
 ## 四、两条约定

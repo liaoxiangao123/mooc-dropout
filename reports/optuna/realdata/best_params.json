@@ -1,0 +1,36 @@
+{
+  "best_params": {
+    "iterations": 550,
+    "depth": 6,
+    "learning_rate": 0.011492999300221412,
+    "l2_leaf_reg": 5.182367293641892,
+    "random_strength": 0.5115723710618746,
+    "bagging_temperature": 0.06505159298527952,
+    "border_count": 128
+  },
+  "objective": "oof_cost_per_student",
+  "calibration": "none",
+  "n_splits": 3,
+  "seed": 42,
+  "n_trials": 20,
+  "best_oof_cost": 20.23,
+  "baseline_oof_cost": 20.34,
+  "baseline_params": {
+    "iterations": 400,
+    "depth": 6,
+    "learning_rate": 0.05
+  },
+  "best_metrics": {
+    "alert_rate": 0.99,
+    "brier": 0.163,
+    "cost_reduction": 0.0236,
+    "per_student_cost": 20.23,
+    "pr_auc": 0.9386,
+    "precision": 0.8003,
+    "recall": 0.9994,
+    "roc_auc": 0.8382,
+    "threshold": 0.5141,
+    "trivial_cost": 20.72
+  },
+  "data_dir": "data\\raw\\kdd2015"
+}

@@ -86,6 +86,17 @@ python scripts/tune.py --trials 30               # E9，目标 = OOF 期望代�
 python scripts/train.py --data-dir data/synthetic --calibration isotonic
 ```
 
+超参搜索在真实数据上重跑（E9 / E9b）：产物按 `--tag` 分开存放，不会覆盖合成数据那份：
+
+```bash
+# 20 个 trial × 3 折 OOF，约 50 分钟；K 折特征只算一次，所有 trial 复用
+python scripts/tune.py --data-dir data/raw/kdd2015 --tag realdata --trials 20 --timeout 5400
+# 测试集上做「默认 vs 调参」的配对 Bootstrap（收益是否可分辨）
+python scripts/validate_tuning.py --data-dir data/raw/kdd2015 --params reports/optuna/realdata/best_params.json
+# 产出：reports/optuna/realdata/{trials.csv,best_params.json}、
+#       reports/调参实验-E9-真实数据.md、reports/调参验证-E9b-真实数据.md
+```
+
 真实数据实验（KDD Cup 2015）：
 
 ```bash

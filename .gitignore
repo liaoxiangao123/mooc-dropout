@@ -40,5 +40,6 @@ Thumbs.db
 data/synthetic/*
 !data/synthetic/.gitkeep
 
-# Optuna 的 sqlite 库（二进制，可用 tune.py 重生成）
+# Optuna 的 sqlite 库（二进制，可用 tune.py 重生成；按数据集分了子目录，故用 **）
 reports/optuna/*.db
+reports/optuna/**/*.db

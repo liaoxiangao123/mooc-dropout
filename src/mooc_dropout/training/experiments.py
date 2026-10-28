@@ -222,6 +222,10 @@ def run_comparison(
                 "cost_at_0.5": metrics_05["cost_per_student"],
                 "cost_at_elkan": metrics_elkan["cost_per_student"],
                 "n_high_risk": metrics_opt["n_high_risk"],
+                # 迭代求解类模型（LR）的收敛审计：n_iter 触顶即表示结果只是「跑到上限」，
+                # 不是「已收敛」。非迭代模型此列为空。
+                "n_iter": getattr(model, "n_iter_", None),
+                "converged": getattr(model, "converged_", True),
                 "note": spec.note,
                 "seconds": round(time.perf_counter() - started, 1),
             }

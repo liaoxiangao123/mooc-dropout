@@ -1,4 +1,4 @@
 ﻿pair,n_seeds,diff_mean,diff_std,diff_min,diff_max,ci_low,ci_high,crosses_zero,n_negative,n_positive
 cb_cs − cb_none,5,-0.054,0.508,-0.68,0.7,-0.452,0.352,True,3,2
 cb_cs − hgbdt,5,-0.2,0.322,-0.69,0.06,-0.476,0.032,True,3,2
-cb_cs − lr,5,-0.912,0.155,-1.07,-0.69,-1.028,-0.792,False,5,0
+cb_cs − lr,5,-0.892,0.112,-0.99,-0.72,-0.97,-0.798,False,5,0

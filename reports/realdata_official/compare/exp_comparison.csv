@@ -1,6 +1,6 @@
-﻿experiment,model,weighting,cost_fn,cost_fp,train_cost_ratio,eval_cost_ratio,threshold,roc_auc,pr_auc,recall,precision,f1,brier,cost_per_student,baseline_cost_trivial,cost_reduction_vs_trivial,predicted_positive_rate,f1_at_0.5,recall_at_0.5,cost_at_0.5,cost_at_elkan,n_high_risk,note,seconds
-LR (baseline),logreg,none,1000.0,100.0,1.0,10.0,0.071,0.8375,0.938,0.9997,0.7965,0.8866,0.1115,20.52,20.65,0.0065,0.9959,0.9094,0.9472,52.66,20.62,23836,代价中立训练，线性基线,82.1
-RF (baseline),random_forest,none,1000.0,100.0,1.0,10.0,0.1197,0.8305,0.9358,0.9993,0.7972,0.8869,0.1164,20.72,20.65,-0.003,0.9947,0.9094,0.9424,56.0,20.64,23806,代价中立训练，装袋树基线,63.3
-HGBDT (baseline),hist_gbdt,none,1000.0,100.0,1.0,10.0,0.0934,0.8433,0.9412,0.9995,0.7978,0.8873,0.1096,20.52,20.65,0.0065,0.9941,0.9109,0.9448,54.07,20.57,23792,代价中立训练，梯度提升基线,46.0
-CatBoost (no cost),catboost,none,1000.0,100.0,1.0,10.0,0.1386,0.8426,0.9406,0.9983,0.8047,0.8911,0.1098,20.6,20.65,0.0026,0.9843,0.9121,0.9567,45.54,20.3,23558,消融：去掉代价敏感训练,272.7
-CatBoost (cost-sensitive),catboost,class_weight,1000.0,100.0,10.0,10.0,0.3862,0.8403,0.9386,0.999,0.8003,0.8887,0.16,20.58,20.65,0.0036,0.9905,0.8911,0.9987,20.31,20.61,23707,本文方法,256.5
+﻿experiment,model,weighting,cost_fn,cost_fp,train_cost_ratio,eval_cost_ratio,threshold,roc_auc,pr_auc,recall,precision,f1,brier,cost_per_student,baseline_cost_trivial,cost_reduction_vs_trivial,predicted_positive_rate,f1_at_0.5,recall_at_0.5,cost_at_0.5,cost_at_elkan,n_high_risk,n_iter,converged,note,seconds
+LR (baseline),logreg,none,1000.0,100.0,1.0,10.0,0.0696,0.8377,0.9383,0.9996,0.7962,0.8864,0.1115,20.59,20.65,0.0028,0.9962,0.9095,0.9479,52.16,20.65,23843,5667.0,True,代价中立训练，线性基线,137.3
+RF (baseline),random_forest,none,1000.0,100.0,1.0,10.0,0.1197,0.8305,0.9358,0.9993,0.7972,0.8869,0.1164,20.72,20.65,-0.003,0.9947,0.9094,0.9424,56.0,20.64,23806,,True,代价中立训练，装袋树基线,43.6
+HGBDT (baseline),hist_gbdt,none,1000.0,100.0,1.0,10.0,0.0934,0.8433,0.9412,0.9995,0.7978,0.8873,0.1096,20.52,20.65,0.0065,0.9941,0.9109,0.9448,54.07,20.57,23792,,True,代价中立训练，梯度提升基线,37.8
+CatBoost (no cost),catboost,none,1000.0,100.0,1.0,10.0,0.1386,0.8426,0.9406,0.9983,0.8047,0.8911,0.1098,20.6,20.65,0.0026,0.9843,0.9121,0.9567,45.54,20.3,23558,,True,消融：去掉代价敏感训练,156.3
+CatBoost (cost-sensitive),catboost,class_weight,1000.0,100.0,10.0,10.0,0.3862,0.8403,0.9386,0.999,0.8003,0.8887,0.16,20.58,20.65,0.0036,0.9905,0.8911,0.9987,20.31,20.61,23707,,True,本文方法,167.2

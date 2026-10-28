@@ -15,9 +15,18 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OrdinalEncoder, StandardScaler
 
+from ..logging_config import get_logger
 from .base import BaseRiskModel
 
+logger = get_logger(__name__)
+
 _SUPPORTED = ("logreg", "random_forest", "hist_gbdt")
+
+# lbfgs 在 KDD Cup 2015 全量数据（9.66 万条 × 44 维、正类率 79.29%）上需要约 5,700 次
+# 迭代才收敛。默认的 2000 会静默停在半路并打印 ConvergenceWarning —— 模型仍能预测，
+# 但「训练完成」与「已收敛」是两件事，报告里必须能区分，故默认上限放到 10000，
+# 并在 fit 后核对 n_iter_ 是否触顶。
+_DEFAULT_LR_MAX_ITER = 10_000
 
 
 class SklearnRiskModel(BaseRiskModel):
@@ -42,6 +51,9 @@ class SklearnRiskModel(BaseRiskModel):
         self.params = params
         self.pipeline_: Pipeline | None = None
         self._cat_cols: list[str] = []
+        # 收敛审计：LR 之外的模型不做迭代求解，这两项保持 None / True
+        self.n_iter_: int | None = None
+        self.converged_: bool = True
 
     @property
     def categorical_features(self) -> list[str]:
@@ -76,7 +88,8 @@ class SklearnRiskModel(BaseRiskModel):
 
         if self.kind == "logreg":
             estimator = LogisticRegression(
-                max_iter=2000,
+                max_iter=int(params.pop("max_iter", _DEFAULT_LR_MAX_ITER)),
+                tol=float(params.pop("tol", 1e-4)),
                 random_state=self.random_seed,
                 **params,
             )
@@ -114,7 +127,32 @@ class SklearnRiskModel(BaseRiskModel):
         # 用样本权重表达代价敏感：正类权重 = C_FN / C_FP
         sample_weight = np.where(y == 1, self.cost_ratio, 1.0)
         self.pipeline_.fit(X, y, model__sample_weight=sample_weight)
+        self._audit_convergence(len(y))
         return self
+
+    def _audit_convergence(self, n_samples: int) -> None:
+        """把「是否真的收敛」变成可查询的事实，而不是一条容易被刷过去的警告。
+
+        sklearn 的 ConvergenceWarning 默认只打印一次，且不影响返回值；如果不主动核对，
+        「LR 停在 2000 次迭代」这件事在实验台账里完全看不出来。
+        """
+        if self.kind != "logreg" or self.pipeline_ is None:
+            self.n_iter_ = None
+            self.converged_ = True
+            return
+        estimator = self.pipeline_.named_steps["model"]
+        self.n_iter_ = int(np.max(np.atleast_1d(estimator.n_iter_)))
+        self.converged_ = self.n_iter_ < int(estimator.max_iter)
+        if not self.converged_:
+            logger.warning(
+                "LogisticRegression 未收敛：n_iter_ 触顶",
+                extra={
+                    "event": "model.logreg.not_converged",
+                    "n_iter": self.n_iter_,
+                    "max_iter": int(estimator.max_iter),
+                    "n_samples": n_samples,
+                },
+            )
 
     def predict_proba(self, X: pd.DataFrame) -> np.ndarray:
         if self.pipeline_ is None:

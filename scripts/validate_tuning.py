@@ -33,9 +33,9 @@ ROOT = Path(__file__).resolve().parents[1]
 def _rel(path: object) -> str:
     """报告里只写相对路径：绝对路径会把本机用户名带进产物，公开仓库时是隐私泄漏。"""
     try:
-        return str(Path(str(path)).resolve().relative_to(ROOT))
+        return Path(str(path)).resolve().relative_to(ROOT).as_posix()
     except (ValueError, OSError):
-        return str(path)
+        return str(path).replace("\\", "/")
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
@@ -48,6 +48,19 @@ from run_extra_experiments import paired_bootstrap                 # noqa: E402
 
 DEFAULT_PARAMS = {"iterations": 400, "depth": 6, "learning_rate": 0.05}
 REPORT = ROOT / "reports" / "调参验证-E9b.md"
+
+
+def resolve_report(params_path: Path, explicit: Path | None) -> Path:
+    """报告路径跟着参数文件走：reports/optuna/<tag>/best_params.json
+    -> reports/调参验证-E9b-<数据集名>.md，避免真实数据的验证结论覆盖合成数据那份。"""
+    if explicit is not None:
+        return explicit
+    tag = Path(params_path).resolve().parent.name
+    if tag == "optuna":
+        return REPORT
+    from tune import tag_label
+
+    return ROOT / "reports" / f"调参验证-E9b-{tag_label(tag)}.md"
 
 
 def evaluate(data, params: dict, matrix: CostMatrix, folds: int, seed: int):
@@ -76,7 +89,9 @@ def main() -> int:
     parser.add_argument("--folds", type=int, default=3)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--n-boot", type=int, default=2000)
+    parser.add_argument("--report", type=Path, default=None, help="报告路径（默认按参数文件所在目录推导）")
     args = parser.parse_args()
+    report = resolve_report(args.params, args.report)
 
     settings = get_settings()
     matrix = CostMatrix(c_fn=settings.cost_fn, c_fp=settings.cost_fp)
@@ -123,6 +138,8 @@ def main() -> int:
                 "精确率": round(float(m["precision"]), 4),
                 "Brier": round(float(m["brier"]), 4),
                 "人均代价(元)": round(float(m["cost_per_student"]), 2),
+                "平凡基线(元)": round(float(m["baseline_cost_trivial"]), 2),
+                "预警率": f"{float(m['predicted_positive_rate']):.2%}",
                 "漏报": int(m["fn"]),
                 "误报": int(m["fp"]),
             }
@@ -159,28 +176,35 @@ def main() -> int:
         "## 结论",
         "",
     ]
+    # 分辨率＝Bootstrap 区间半宽：比它更小的差异在这份测试集上无法与抽样波动区分。
+    # 这个数依赖测试集规模（合成 822 人 → 约 1.2 元，真实 2.4 万人 → 约 0.2 元），
+    # 所以必须算出来而不是写死。
+    half_width = round((float(delta["上限"]) - float(delta["下限"])) / 2, 2)
+    n_test = len(data.y_test)
+
     if crosses_zero:
         lines += [
             f"测试集上人均代价下降 **{gain:.2f} 元**，但 95% 区间 "
             f"[{delta['下限']}, {delta['上限']}] **跨零**，即收益与抽样噪声不可分辨。",
             "",
             "因此 E9 只能作为「调参流程可用」的工程证据，**不能写成「调参显著提升了效果」**。",
-            "这与 E6/E7 的结论一致：在本数据规模下（测试集约 800 人），人均代价的分辨率约为 "
-            "1.2 元/人，几十元的模型或参数差异会被样本波动吞掉。",
+            f"这份测试集 n = {n_test:,}，人均代价的抽样分辨率（区间半宽）为 {half_width:.2f} 元/人，"
+            f"本次观测到的差异 {abs(gain):.2f} 元落在分辨率之内。",
         ]
     else:
         lines += [
             f"测试集上人均代价下降 **{gain:.2f} 元**，95% 区间 "
-            f"[{delta['下限']}, {delta['上限']}] 不跨零，调参收益具备统计可分辨性。",
+            f"[{delta['下限']}, {delta['上限']}] 不跨零，调参收益具备统计可分辨性"
+            f"（测试集 n = {n_test:,}，分辨率 {half_width:.2f} 元/人）。",
             "",
             "仍需注意：区间较窄时也要结合 E6 的种子间标准差一并讨论，避免把「同一份测试集上的"
             "偶然优势」当作稳定收益。",
         ]
 
-    REPORT.write_text("\n".join(lines), encoding="utf-8")
+    report.write_text("\n".join(lines), encoding="utf-8")
     print("\n" + table.to_string(index=False))
     print("\n配对 Bootstrap：", delta)
-    print(f"\n报告：{REPORT}")
+    print(f"\n报告：{report}")
     return 0
 
 
