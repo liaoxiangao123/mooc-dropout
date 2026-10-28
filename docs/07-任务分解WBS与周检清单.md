@@ -240,7 +240,7 @@
 | 17 | 修复阈值网格分辨率不足 | 5.9.3、`evaluation/cost.py` | ✅ 已完成 | 改为排序+前缀和的精确搜索，O(n log n) |
 | 18 | 真实数据五基线对比（E13） | 5.9.6、表 5-18/5-19、图 5-8 | ✅ 已完成 | `scripts/run_experiments.py --label-file`；两种口径 × 五模型，每模型 4 次拟合（3 折 OOF + 全量重训）；`scripts/plot_baseline_realdata.py` 作图 |
 | 19 | 修复实验编排模块的同类 OOF 错位 | 6.5、`training/experiments.py` | ✅ 已完成 | 与第 16 项同源的另一份实现；新增 TC-OOF02（断言预警比例 < 0.95） |
-| 20 | 生成正式 docx / pdf | `docs/*.docx`、`docs/*.pdf` | ✅ 已完成（85 页） | 由 `scripts/md_to_docx.py` 生成 docx、Word 导出 PDF；正文已含 5.9.6/5.9.7、5.10.5 与新摘要 |
+| 20 | 生成正式 docx / pdf | `docs/*.docx`、`docs/*.pdf` | ✅ 已完成（87 页） | 由 `scripts/md_to_docx.py` 生成 docx、Word 导出 PDF；正文已含 5.9.6/5.9.7、5.10.5 与新摘要 |
 | 21 | 真实数据多种子重复（E14） | 5.9.7、表 5-20/5-21、图 5-9 | ✅ 已完成 | `scripts/multiseed_realdata.py`（训练）+ `scripts/collect_multiseed.py`（从 npz 重建汇总）+ `scripts/plot_multiseed_realdata.py`（作图）；5 种子 × 4 配置 × 2 口径 = 40 次训练、160 次拟合；配置间极差 0.17 元 < 种子标准差 0.15~0.30 元，六组配对比较仅「代价敏感 vs LR」不跨零；两次内存溢出后串行补跑，记录见 `reports/真实数据多种子重复.md` 第五节 |
 | 22 | 修复 LR 基线 lbfgs 未收敛 | 5.9.6、`models/baseline.py` | ✅ 已完成 | 迭代上限由硬编码 2000 改为可配置（默认 10000），训练后核对 `n_iter_ < max_iter` 并把 `n_iter`/`converged` 写进 `exp_comparison.csv`；实测官方口径需 5667 次、早期 4432 次收敛。修复后 LR 官方 AUC 0.8375→0.8377、代价 20.52→20.59 元，早期 0.8654→0.8655、29.99→30.12 元，其余四模型逐位不变 |
 | 23 | 真实数据超参搜索（E15 / E15b） | 5.10.5、表 5-23/5-24、`reports/真实数据调参-E15.md` | ✅ 已完成（结论仍为否定） | `scripts/tune.py --tag realdata`；20 trial（12 完成 / 8 剪枝）× 3 折 OOF；OOF 只降 0.11 元（0.5%），测试集降 0.10 元但区间 [−0.40, 0.16] 跨零，分辨率 0.28 元 > 观测差；K 折特征改为整轮只算一次 |
