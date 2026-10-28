@@ -1,0 +1,35 @@
+# 统一换行符：仓库内一律 LF，避免 Windows / Linux 之间来回 diff
+* text=auto eol=lf
+
+# 文本文件显式声明（防止某个扩展名被误判成二进制）
+*.py     text eol=lf
+*.md     text eol=lf
+*.txt    text eol=lf
+*.json   text eol=lf
+*.csv    text eol=lf
+*.yml    text eol=lf
+*.yaml   text eol=lf
+*.toml   text eol=lf
+*.cfg    text eol=lf
+*.ini    text eol=lf
+.gitignore      text eol=lf
+.gitattributes  text eol=lf
+
+# Windows 批处理必须 CRLF，否则 cmd 解析出错
+*.bat    text eol=crlf
+*.cmd    text eol=crlf
+*.ps1    text eol=crlf
+
+# 二进制：不做任何转换，也不显示文本 diff
+*.docx   binary
+*.xlsx   binary
+*.pdf    binary
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.joblib binary
+*.npz    binary
+*.pkl    binary
+*.db     binary
+*.zip    binary
