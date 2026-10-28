@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mooc-dropout"
+version = "0.1.0"
+description = "基于代价敏感 CatBoost 的 MOOC 辍学风险预测"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+pythonpath = ["src"]
+markers = [
+    "slow: 需要真实训练的较慢用例",
+    "catboost: 仅在 catboost 可用时执行",
+]

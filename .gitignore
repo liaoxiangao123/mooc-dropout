@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# 环境变量（真实密钥绝不入仓）
+.env
+.env.local
+.env.*.local
+
+# 数据（体积大，不入仓；只保留 .gitkeep）
+data/raw/*
+data/interim/*
+data/processed/*
+!data/**/.gitkeep
+
+# 模型产物与大图（报告里的 csv/json 体积极小，反过来必须入库——
+# reports/README.md 约定「数字以 csv 为准」，不入库就断链了）
+artifacts/
+reports/coverage/
+reports/*.png
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# 本地工作区数据（.workbuddy 存的是个人备忘与记忆日志，不进公开仓库）
+.workbuddy/
+
+# 合成数据（12.8 MB，可用 scripts/make_demo_data.py 一键重生成）
+data/synthetic/*
+!data/synthetic/.gitkeep
+
+# Optuna 的 sqlite 库（二进制，可用 tune.py 重生成）
+reports/optuna/*.db

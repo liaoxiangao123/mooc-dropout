@@ -1,0 +1,43 @@
+# 环境锁定（自动生成，勿手改）
+# 生成时间：2026-10-27 ｜ Python 3.13.14 ｜ Windows
+# 说明：requirements.txt 用下限（>=）表达兼容范围，本文件锁定实测通过的精确版本，
+#       用于复现论文数值。安装：pip install -r requirements.lock.txt
+
+annotated-doc==0.0.5
+annotated-types==0.8.0
+anyio==4.15.1
+catboost==1.2.10
+click==8.5.0
+cloudpickle==3.1.2
+contourpy==1.4.0
+cycler==0.12.1
+fastapi==0.159.1
+fonttools==4.67.0
+graphviz==0.21
+h11==0.16.0
+idna==3.20
+joblib==1.6.0
+kiwisolver==1.5.1
+matplotlib==3.11.2
+narwhals==2.27.1
+numpy==2.4.6
+opentelemetry-api==1.45.1
+packaging==26.3
+pandas==3.1.0
+pillow==12.2.0
+plotly==7.1.0
+pydantic==2.14.1
+pydantic-settings==2.16.1
+pydantic_core==2.50.1
+pyparsing==3.3.3
+python-dateutil==3.0.0
+python-dotenv==1.2.4
+scikit-learn==1.9.1
+scipy==1.18.1
+six==1.17.0
+starlette==1.9.0
+threadpoolctl==3.7.0
+typing-inspection==0.4.4
+typing_extensions==4.16.0
+tzdata==2026.5
+uvicorn==0.54.0

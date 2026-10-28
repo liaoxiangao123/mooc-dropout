@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MOOC 辍学风险预测 · 演示</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --border: #e3e6eb;
+    --text: #1f2329;
+    --muted: #6b7280;
+    --accent: #2f6fed;
+    --high: #d93025;
+    --medium: #c77700;
+    --low: #1e8e3e;
+    --shadow: 0 1px 2px rgba(16,24,40,.06), 0 8px 24px rgba(16,24,40,.06);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    line-height: 1.6;
+  }
+  header {
+    padding: 28px 32px 12px;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 22px; margin: 0 0 6px; letter-spacing: .2px; }
+  .sub { color: var(--muted); font-size: 13px; }
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 16px 32px 48px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; padding: 12px 16px 32px; } header { padding: 20px 16px 8px; } }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 18px 20px;
+  }
+  .card h2 { font-size: 14px; margin: 0 0 14px; font-weight: 600; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  input, textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    background: #fbfcfd;
+    color: var(--text);
+  }
+  input:focus, textarea:focus { outline: 2px solid rgba(47,111,237,.18); border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 190px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.5; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  button {
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  button:hover { border-color: #c7ccd6; background: #f9fafb; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
+  button.primary:hover { background: #2559c9; }
+  button:disabled { opacity: .55; cursor: not-allowed; }
+  .result-empty { color: var(--muted); font-size: 13px; padding: 28px 0; text-align: center; }
+  .score { display: flex; align-items: baseline; gap: 10px; }
+  .score .value { font-size: 46px; font-weight: 650; letter-spacing: -1px; line-height: 1; }
+  .score .unit { font-size: 14px; color: var(--muted); }
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; margin-left: auto;
+  }
+  .badge.high { background: #fdecea; color: var(--high); }
+  .badge.medium { background: #fff4e5; color: var(--medium); }
+  .badge.low { background: #e8f5ec; color: var(--low); }
+  .bar { height: 8px; background: #eef0f3; border-radius: 999px; margin: 14px 0 6px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; border-radius: 999px; transition: width .45s ease; }
+  .meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 12.5px; }
+  th, td { text-align: left; padding: 7px 6px; border-bottom: 1px solid #f0f2f5; }
+  th { color: var(--muted); font-weight: 500; }
+  .up { color: var(--high); font-weight: 600; }
+  .down { color: var(--low); font-weight: 600; }
+  .err { background: #fdecea; color: #a1281f; border-radius: 8px; padding: 10px 12px; font-size: 12.5px; margin-top: 12px; }
+  .kv { display: grid; grid-template-columns: 96px 1fr; gap: 6px 10px; font-size: 12.5px; }
+  .kv div:nth-child(odd) { color: var(--muted); }
+  code { background: #f1f3f6; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+  footer { max-width: 1180px; margin: 0 auto; padding: 0 32px 40px; color: var(--muted); font-size: 12px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>MOOC 辍学风险预测 · 原型演示</h1>
+  <div class="sub">代价敏感 CatBoost · 输入学习者行为事件，输出辍学概率、风险等级与关键致险因子</div>
+</header>
+
+<div class="wrap">
+  <section class="card">
+    <h2>① 输入学习者行为</h2>
+    <div class="grid3">
+      <div>
+        <label for="eid">选课 ID</label>
+        <input id="eid" value="E9000001" />
+      </div>
+      <div>
+        <label for="cid">课程 ID</label>
+        <input id="cid" value="C01" />
+      </div>
+      <div>
+        <label for="uid">学习者 ID</label>
+        <input id="uid" value="u000001" />
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <label for="events">行为事件（JSON 数组：time / source / event / object）</label>
+      <textarea id="events" spellcheck="false"></textarea>
+    </div>
+    <div class="row">
+      <button id="btn-active">生成「持续学习」示例</button>
+      <button id="btn-risk">生成「高危沉默」示例</button>
+      <button class="primary" id="btn-run">开始预测</button>
+      <button id="btn-list">导出干预名单（12 人）</button>
+    </div>
+    <div id="error" class="err hidden"></div>
+    <div id="list-info" class="sub hidden" style="margin-top:10px"></div>
+  </section>
+
+  <section class="card">
+    <h2>② 预测结果</h2>
+    <div id="empty" class="result-empty">点击「开始预测」查看结果</div>
+
+    <div id="result" class="hidden">
+      <div class="score">
+        <span class="value" id="prob">--</span>
+        <span class="unit">辍学概率</span>
+        <span class="badge" id="level">--</span>
+      </div>
+      <div class="bar"><span id="bar" style="width:0;background:var(--low)"></span></div>
+      <div class="meta">
+        <span id="threshold">决策阈值 --</span>
+        <span id="model">--</span>
+      </div>
+
+      <table>
+        <thead><tr><th>关键因子</th><th>取值</th><th>贡献</th></tr></thead>
+        <tbody id="factors"></tbody>
+      </table>
+
+      <div style="margin-top:18px">
+        <h2 style="margin-bottom:8px">决策说明</h2>
+        <div class="kv">
+          <div>风险等级</div><div id="explain-level">--</div>
+          <div>决策阈值</div><div id="explain-th">--</div>
+          <div>概率口径</div><div id="explain-calib">--</div>
+          <div>原始分数</div><div id="explain-raw">--</div>
+          <div>模型版本</div><div id="explain-ver">--</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  说明：本页为毕业设计原型，示例数据由前端生成，仅用于演示接口与展示形式；模型指标见
+  <code>reports/metrics.json</code>，接口文档见 <code>/docs</code>。
+</footer>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  function pad(n) { return String(n).padStart(2, "0"); }
+
+  // 生成示例事件：active=true 表示持续学习，false 表示早期沉默
+  function buildEvents(active) {
+    const events = [];
+    const start = new Date("2014-03-01T19:00:00");
+    const days = active ? 12 : 3;
+    const perDay = active ? 9 : 3;
+    const sources = [
+      ["video", "play_video", "video_C01_"],
+      ["problem", "problem_check", "problem_C01_"],
+      ["navigate", "nav_next", "chapter_C01_"],
+      ["access", "seq_next", "chapter_C01_"],
+      ["discussion", "add_entry", "forum_C01_"]
+    ];
+    for (let d = 0; d < days; d++) {
+      const count = active ? perDay : Math.max(1, perDay - d);
+      for (let i = 0; i < count; i++) {
+        const t = new Date(start.getTime() + d * 86400000 + i * 11 * 60000);
+        const s = sources[i % sources.length];
+        events.push({
+          time: `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}T${pad(t.getHours())}:${pad(t.getMinutes())}:00`,
+          source: s[0],
+          event: s[1],
+          object: s[2] + ((i % 6) + 1)
+        });
+      }
+    }
+    return events;
+  }
+
+  function fill(active) {
+    $("eid").value = active ? "E9000001" : "E9000002";
+    $("uid").value = active ? "u000001" : "u000777";
+    $("events").value = JSON.stringify(buildEvents(active), null, 2);
+  }
+
+  const LEVEL_TEXT = { high: "高风险", medium: "中风险", low: "低风险" };
+  const LEVEL_COLOR = { high: "var(--high)", medium: "var(--medium)", low: "var(--low)" };
+
+  function showError(message) {
+    $("error").textContent = message;
+    $("error").classList.remove("hidden");
+  }
+
+  async function callPredict(body, attempt = 1) {
+    const resp = await fetch("/v1/predict", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if (!resp.ok) {
+      // 5xx 重试最多 3 次；4xx 直接抛出，交给用户修正输入
+      if (resp.status >= 500 && attempt < 3) {
+        await new Promise((r) => setTimeout(r, 300 * attempt));
+        return callPredict(body, attempt + 1);
+      }
+      let detail = `请求失败（HTTP ${resp.status}）`;
+      try {
+        const payload = await resp.json();
+        if (payload.error && payload.error.message) detail = payload.error.message;
+        if (payload.error && payload.error.details && payload.error.details.errors) {
+          detail += "：" + payload.error.details.errors.map((e) => `${e.loc} ${e.msg}`).join("；");
+        }
+      } catch (e) { /* 保持默认文案 */ }
+      throw new Error(detail);
+    }
+    return resp.json();
+  }
+
+  async function run() {
+    $("error").classList.add("hidden");
+    let events;
+    try {
+      events = JSON.parse($("events").value);
+    } catch (e) {
+      showError("事件 JSON 解析失败：" + e.message);
+      return;
+    }
+    if (!Array.isArray(events) || events.length === 0) {
+      showError("请至少提供一条行为事件");
+      return;
+    }
+
+    $("btn-run").disabled = true;
+    try {
+      const data = await callPredict({
+        enrollment_id: $("eid").value.trim() || "unknown",
+        course_id: $("cid").value.trim() || "unknown",
+        username: $("uid").value.trim() || "unknown",
+        events
+      });
+      render(data, events.length);
+    } catch (e) {
+      showError(e.message);
+    } finally {
+      $("btn-run").disabled = false;
+    }
+  }
+
+  function render(data, nEvents) {
+    const p = data.risk_probability;
+    const level = data.risk_level;
+    $("empty").classList.add("hidden");
+    $("result").classList.remove("hidden");
+
+    $("prob").textContent = (p * 100).toFixed(1) + "%";
+    $("prob").style.color = LEVEL_COLOR[level] || "var(--text)";
+    const badge = $("level");
+    badge.textContent = LEVEL_TEXT[level] || level;
+    badge.className = "badge " + level;
+
+    const bar = $("bar");
+    bar.style.width = Math.max(2, Math.round(p * 100)) + "%";
+    bar.style.background = LEVEL_COLOR[level] || "var(--accent)";
+
+    $("threshold").textContent = `决策阈值 ${data.decision_threshold}（事件数 ${nEvents}）`;
+    $("model").textContent = data.model_name;
+    $("explain-level").textContent = LEVEL_TEXT[level] || level;
+    $("explain-th").textContent = data.decision_threshold;
+    $("explain-calib").textContent = data.calibrated
+      ? "已校准（可直接按概率理解）"
+      : "未校准的风险分数（只用于排序，勿按概率字面理解）";
+    $("explain-raw").textContent = (data.raw_probability === null || data.raw_probability === undefined)
+      ? "—"
+      : data.raw_probability.toFixed(4);
+    $("explain-ver").textContent = data.model_version;
+
+    const tbody = $("factors");
+    tbody.innerHTML = "";
+    (data.top_factors || []).forEach((f) => {
+      const tr = document.createElement("tr");
+      const value = typeof f.value === "number" ? f.value.toFixed(2) : f.value;
+      const contribution = f.contribution === null || f.contribution === undefined
+        ? "—"
+        : (f.contribution > 0 ? "+" : "") + f.contribution.toFixed(3);
+      const cls = f.direction === "risk_up" ? "up" : (f.direction === "risk_down" ? "down" : "");
+      tr.innerHTML = `<td>${f.feature}</td><td>${value}</td><td class="${cls}">${contribution}</td>`;
+      tbody.appendChild(tr);
+    });
+    if (!(data.top_factors || []).length) {
+      tbody.innerHTML = '<tr><td colspan="3" style="color:var(--muted)">模型未返回因子明细</td></tr>';
+    }
+  }
+
+  // 构造一个 12 人的小群体，活跃度递减，用于演示「按风险排序的干预名单」
+  function buildCohort(n = 12) {
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      const active = i < n / 2;
+      const events = buildEvents(active).filter((_, idx) => idx % (1 + (i % 3)) === 0);
+      out.push({
+        enrollment_id: "E90" + String(i + 1).padStart(4, "0"),
+        course_id: "C01",
+        username: "u9" + String(i + 1).padStart(5, "0"),
+        events
+      });
+    }
+    return out;
+  }
+
+  async function exportList() {
+    $("error").classList.add("hidden");
+    $("list-info").classList.add("hidden");
+    $("btn-list").disabled = true;
+    try {
+      const resp = await fetch("/v1/intervention-list?only_flagged=false", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ records: buildCohort(12) })
+      });
+      if (!resp.ok) throw new Error(`导出失败（HTTP ${resp.status}）`);
+      const blob = await resp.blob();
+      const total = resp.headers.get("X-Total-Count") || "?";
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "intervention_list.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+      $("list-info").textContent =
+        `已导出 ${total} 条，按风险概率降序排列，Excel 可直接打开（UTF-8 BOM）。`;
+      $("list-info").classList.remove("hidden");
+    } catch (e) {
+      showError(e.message);
+    } finally {
+      $("btn-list").disabled = false;
+    }
+  }
+
+  $("btn-active").addEventListener("click", () => fill(true));
+  $("btn-risk").addEventListener("click", () => fill(false));
+  $("btn-run").addEventListener("click", run);
+  $("btn-list").addEventListener("click", exportList);
+
+  fill(false);
+</script>
+</body>
+</html>

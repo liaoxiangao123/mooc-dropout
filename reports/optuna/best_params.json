@@ -1,0 +1,33 @@
+{
+  "best_params": {
+    "iterations": 450,
+    "depth": 5,
+    "learning_rate": 0.041436505068575095,
+    "l2_leaf_reg": 1.6329574488127305,
+    "random_strength": 1.1713706403428346,
+    "bagging_temperature": 0.9234427016914144,
+    "border_count": 128
+  },
+  "objective": "oof_cost_per_student",
+  "calibration": "none",
+  "n_splits": 3,
+  "seed": 42,
+  "n_trials": 21,
+  "best_oof_cost": 68.85,
+  "baseline_oof_cost": 74.58,
+  "baseline_params": {
+    "iterations": 400,
+    "depth": 6,
+    "learning_rate": 0.05
+  },
+  "best_metrics": {
+    "brier": 0.1957,
+    "per_student_cost": 68.85,
+    "pr_auc": 0.4531,
+    "precision": 0.3277,
+    "recall": 0.8551,
+    "roc_auc": 0.7732,
+    "threshold": 0.24
+  },
+  "data_dir": "data/synthetic"
+}

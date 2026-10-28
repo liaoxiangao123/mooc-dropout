@@ -1,0 +1,6 @@
+﻿experiment,model,weighting,cost_fn,cost_fp,train_cost_ratio,eval_cost_ratio,threshold,roc_auc,pr_auc,recall,precision,f1,brier,cost_per_student,f1_at_0.5,recall_at_0.5,cost_at_0.5,cost_at_elkan,n_high_risk,note,seconds
+CatBoost rho=1,catboost,class_weight,100.0,100.0,1.0,1.0,0.4,0.7419,0.3836,0.6098,0.4505,0.5181,0.1383,22.63,0.4026,0.3841,22.75,22.75,222,训练权重与评估代价比均为 C_FN/C_FP=1,91.2
+CatBoost rho=2,catboost,class_weight,200.0,100.0,2.0,2.0,0.41,0.7439,0.3889,0.689,0.4484,0.5433,0.151,29.32,0.531,0.6524,29.93,29.32,252,训练权重与评估代价比均为 C_FN/C_FP=2,89.6
+CatBoost rho=5,catboost,class_weight,500.0,100.0,5.0,5.0,0.43,0.7486,0.4041,0.6951,0.4335,0.534,0.1898,48.54,0.5416,0.6951,47.81,68.86,263,训练权重与评估代价比均为 C_FN/C_FP=5,90.9
+CatBoost rho=10,catboost,class_weight,1000.0,100.0,10.0,10.0,0.38,0.7345,0.3626,0.7744,0.3265,0.4593,0.2367,76.89,0.5187,0.7195,77.01,78.71,389,训练权重与评估代价比均为 C_FN/C_FP=10,88.0
+CatBoost rho=20,catboost,class_weight,2000.0,100.0,20.0,20.0,0.04,0.7304,0.3791,1.0,0.1995,0.3327,0.305,80.05,0.4329,0.7866,122.02,80.05,822,训练权重与评估代价比均为 C_FN/C_FP=20,87.7

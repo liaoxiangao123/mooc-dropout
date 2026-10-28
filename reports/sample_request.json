@@ -1,0 +1,19 @@
+{
+  "enrollment_id": "E0000032",
+  "course_id": "C06",
+  "username": "u_demo",
+  "events": [
+    {
+      "time": "2014-03-08T23:34:02",
+      "source": "video",
+      "event": "play_video",
+      "object": "video_C06_22"
+    },
+    {
+      "time": "2014-03-09T23:28:16",
+      "source": "problem",
+      "event": "problem_check",
+      "object": "problem_C06_4"
+    }
+  ]
+}

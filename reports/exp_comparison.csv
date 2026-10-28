@@ -1,0 +1,6 @@
+﻿experiment,model,weighting,cost_fn,cost_fp,train_cost_ratio,eval_cost_ratio,threshold,roc_auc,pr_auc,recall,precision,f1,brier,cost_per_student,f1_at_0.5,recall_at_0.5,cost_at_0.5,cost_at_elkan,n_high_risk,note,seconds
+LR (baseline),logreg,none,1000.0,100.0,1.0,10.0,0.07,0.7488,0.4074,0.9085,0.2435,0.384,0.1358,74.57,0.4027,0.3659,135.52,79.81,612,代价中立训练，线性基线,4.1
+RF (baseline),random_forest,none,1000.0,100.0,1.0,10.0,0.19,0.7387,0.4137,0.7317,0.3692,0.4908,0.1381,78.47,0.3768,0.3171,143.55,81.51,325,代价中立训练，装袋树基线,3.1
+HGBDT (baseline),hist_gbdt,none,1000.0,100.0,1.0,10.0,0.03,0.74,0.4006,0.7744,0.294,0.4262,0.1436,82.12,0.3789,0.3293,141.97,79.68,432,代价中立训练，梯度提升基线,15.3
+CatBoost (no cost),catboost,none,1000.0,100.0,1.0,10.0,0.11,0.7419,0.3836,0.7439,0.3742,0.498,0.1383,75.91,0.4026,0.3841,133.33,74.21,326,消融：去掉代价敏感训练,100.1
+CatBoost (cost-sensitive),catboost,class_weight,1000.0,100.0,10.0,10.0,0.38,0.7345,0.3626,0.7744,0.3265,0.4593,0.2367,76.89,0.5187,0.7195,77.01,78.71,389,本文方法,92.6

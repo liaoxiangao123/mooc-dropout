@@ -1,0 +1,3 @@
+﻿experiment,model,weighting,cost_fn,cost_fp,train_cost_ratio,eval_cost_ratio,threshold,roc_auc,pr_auc,recall,precision,f1,brier,cost_per_student,f1_at_0.5,recall_at_0.5,cost_at_0.5,cost_at_elkan,n_high_risk,note,seconds
+CatBoost full features,catboost,class_weight,1000.0,100.0,10.0,10.0,0.38,0.7345,0.3626,0.7744,0.3265,0.4593,0.2367,76.89,0.5187,0.7195,77.01,78.71,389,全特征,86.3
+CatBoost w/o temporal decay,catboost,class_weight,1000.0,100.0,10.0,10.0,0.38,0.7345,0.3776,0.7622,0.3019,0.4325,0.2413,82.6,0.5099,0.7073,79.68,79.44,414,去掉 8 个趋势/衰减特征；ΔAUC=+0.0000,90.0
