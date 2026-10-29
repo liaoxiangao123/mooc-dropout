@@ -14,7 +14,7 @@
 
 在 4000 条选课记录、20.8 万条行为事件构成的数据集上，模型在测试集取得 ROC-AUC 0.729、PR-AUC 0.360；在代价最优阈值 0.3089 下，召回率 0.750、精确率 0.329，漏报 41 例、误报 251 例，人均期望代价 80.41 元；当代价比由 1 增至 20 时，召回率由 0.610 单调升至 1.000，预警规模由 222 人增至 822 人，表明代价比可作为业务方可调的决策旋钮。
 
-实验同时给出两项诚实的负面与修正性结论。其一，五个随机种子的重复实验与配对 Bootstrap 表明，参与比较的四个模型其人均代价差**全部**落在种子间噪声之内（95% 区间均跨零），因此本文的立论不在于「更优的模型」，而在于「更优的决策链路」。其二，类别加权会显著破坏概率校准（五种子上 Brier 由 0.137 升至 0.208、期望校准误差达 0.227），而事后保序回归校准可把 ECE 降至 0.025、Brier 降至 0.132，人均代价几乎不变；但校准之后必须重新选择阈值，否则沿用 0.5 会使人均代价上升 69%——这一连带影响在同类研究中常被忽视，却直接决定了模型输出的概率能否被教师按字面理解。
+实验同时给出两项诚实的负面与修正性结论。其一，五个随机种子的重复实验与配对 Bootstrap 表明，参与比较的四个模型其人均代价差**全部**落在种子间噪声之内（95% 区间均跨零），因此本文的立论不在于「更优的模型」，而在于「更优的决策链路」。其二，类别加权会显著破坏概率校准（五种子上 Brier 由 0.137 升至 0.208、期望校准误差达 0.227），而事后保序回归校准可把 ECE 降至 0.025、Brier 降至 0.132，人均代价几乎不变；但校准之后必须重新选择阈值，否则沿用 0.5 会使人均代价上升 66%——这一连带影响在同类研究中常被忽视，却直接决定了模型输出的概率能否被教师按字面理解。
 
 本文进一步在 KDD Cup 2015 真实训练集（120,542 条选课、8,157,277 条行为事件、39 门课程）上复核上述机制，并得到一个对工程实践更关键的结论：**当正类比例远高于代价最优阈值时，阈值决策会退化**。真实数据辍学率为 79.29%，而代价比 10:1 对应的最优阈值为 0.0909，几乎所有学生的校准概率都在其上，于是「给所有人预警」既是代价最优又不可执行，模型相对平凡基线的人均代价下降仅 0.55%；把代价比降到 1，该数字回升到 29.2%。据此本文补充了两套评估工具：代价比扫描（固定 $C_{FP}$ 扫 $\rho$，用 OOF 重选阈值，无需重训）与容量分析（把决策规则换成「只能干预 K 人，按风险排序取前 K」）。在 70% 的干预容量下，模型相对随机挑人降低人均代价 39.0%，前 70% 名单的辍学生命中率为 92.1%（基率 79.3%）。同一数据上重跑五个基线（逻辑回归、随机森林、直方图 GBDT、CatBoost 无加权、CatBoost 加权），其 ROC-AUC 集中在 0.83~0.84，而预警比例高达 98.4%~99.6%、人均代价挤在 20.52~20.72 元的 0.20 元区间内（全报警基线 20.65 元）——差异消失的原因是决策规则退化，而非抽样误差；加权模型既未提升排序（AUC 0.8426→0.8403）也未降低代价（差 0.02 元），却把 Brier 从 0.1098 恶化到 0.1600。为判断这些微小差异是否只是种子噪声，本文又在同一数据上做了 5 种子 × 4 配置 × 2 种标签口径的重复实验（40 次训练、160 次拟合）：同一配置跨种子的人均代价标准差为 0.15~0.30 元，而四个配置之间的均值极差只有 0.17 元——**换一个随机种子的影响与换一个模型相当**，连全报警基线本身都随切分漂移 0.49 元；逐种子配对检验中，除「代价敏感 CatBoost 比 LR 便宜」（官方 −0.17 元、早期 −0.89 元，两个区间都不跨零）之外，其余比较的 Bootstrap 区间全部跨零。本文因此主张：代价敏感学习的收益由「代价矩阵 × 正类基率 × 模型可分性」三者共同决定，脱离基率单独设定代价比，会得到一个技术上正确、业务上无用的模型。
 
@@ -32,7 +32,7 @@ This thesis studies the KDD Cup 2015 XuetangX behavioural dataset and constructs
 
 On a dataset of 4,000 enrolments and 208,381 behavioural events, the model achieves a ROC-AUC of 0.729 and a PR-AUC of 0.360 on the test set. At the cost-optimal threshold of 0.3089, recall is 0.750 and precision is 0.329, with 41 false negatives and 251 false positives, yielding an expected cost of 80.41 CNY per student. As the cost ratio increases from 1 to 20, recall rises monotonically from 0.610 to 1.000 and the alert list grows from 222 to 822 students, indicating that the cost ratio can serve as a business-tunable decision knob.
 
-The experiments also yield two candid findings, one negative and one corrective. First, five random seeds with paired bootstrap tests show that the per-student cost differences among the four compared models all fall within between-seed noise, with every 95% interval crossing zero; the thesis therefore argues for a better decision pipeline rather than a better model. Second, class weighting severely damages probability calibration (the Brier score rises from 0.137 to 0.208 across five seeds and the expected calibration error reaches 0.227), while post-hoc isotonic calibration reduces ECE to 0.025 and Brier to 0.132 at almost unchanged expected cost; the threshold, however, must then be reselected, since keeping 0.5 would raise the per-student cost by 69%. This coupling is rarely reported in comparable studies, yet it decides whether the emitted probabilities can be read literally by teachers.
+The experiments also yield two candid findings, one negative and one corrective. First, five random seeds with paired bootstrap tests show that the per-student cost differences among the four compared models all fall within between-seed noise, with every 95% interval crossing zero; the thesis therefore argues for a better decision pipeline rather than a better model. Second, class weighting severely damages probability calibration (the Brier score rises from 0.137 to 0.208 across five seeds and the expected calibration error reaches 0.227), while post-hoc isotonic calibration reduces ECE to 0.025 and Brier to 0.132 at almost unchanged expected cost; the threshold, however, must then be reselected, since keeping 0.5 would raise the per-student cost by 66%. This coupling is rarely reported in comparable studies, yet it decides whether the emitted probabilities can be read literally by teachers.
 
 The mechanisms above are further re-examined on the full KDD Cup 2015 training set (120,542 enrolments, 8,157,277 events, 39 courses), which yields a finding that matters more for practice: **threshold decisions collapse when the positive base rate far exceeds the cost-optimal threshold**. The observed dropout rate is 79.29%, whereas a 10:1 cost ratio implies a threshold of 0.0909; almost every calibrated probability lies above it, so "alert everyone" is simultaneously cost-optimal and operationally useless, and the model beats the trivial baseline by only 0.55% per student. Lowering the cost ratio to 1 restores the reduction to 29.2%. Two additional evaluation tools are therefore introduced: a cost-ratio scan (fixing $C_{FP}$ and sweeping $\rho$, reselecting the threshold on out-of-fold predictions without retraining) and a capacity analysis (replacing the threshold rule by "intervene on the top-K students by risk"). At 70% capacity the ranked list cuts the per-student cost by 39.0% relative to random selection, with a dropout hit rate of 92.1% against a 79.3% base rate. Re-running five baselines on the same data (logistic regression, random forest, histogram GBDT, unweighted CatBoost and cost-weighted CatBoost) gives ROC-AUC values clustered between 0.83 and 0.84, yet alert rates of 98.4%-99.6% and per-student costs compressed into a 0.20 CNY band (20.52-20.72) around the alert-everyone baseline of 20.65 CNY: the differences vanish because the decision rule has degenerated, not because of sampling error. Weighting neither improves ranking (AUC 0.8426 to 0.8403) nor reduces cost (a 0.02 CNY gap) while degrading Brier from 0.1098 to 0.1600. To test whether these tiny gaps are mere seed noise, a 5-seed × 4-configuration × 2-label-definition repetition (40 runs, 160 model fits) is added on the same data: the standard deviation of per-student cost across seeds is 0.15-0.30 CNY, whereas the spread between configuration means is only 0.17 CNY, so changing the random seed matters as much as changing the model, and the trivial baseline itself drifts by 0.49 CNY across splits. In paired per-seed tests every comparison except cost-sensitive CatBoost versus logistic regression (0.17 CNY cheaper under the official label, 0.89 CNY under the early-dropout label, both bootstrap intervals excluding zero) has an interval that straddles zero. The thesis accordingly argues that the benefit of cost-sensitive learning is jointly determined by the cost matrix, the base rate and model separability; setting a cost ratio without reference to the base rate produces a model that is technically correct but operationally useless.
 
@@ -695,7 +695,7 @@ $$
 | 模型 | 关键参数 | 代价处理 |
 |---|---|---|
 | 逻辑回归（LR） | `max_iter=10000`（可配置），特征标准化 | 训练代价中立 |
-| 随机森林（RF） | 300 棵树，`min_samples_leaf=2` | 训练代价中立 |
+| 随机森林（RF） | 250 棵树（与 CatBoost 的迭代轮数对齐），`min_samples_leaf=2` | 训练代价中立 |
 | 直方图 GBDT（HGBDT） | 250 轮，`lr=0.05` | 训练代价中立 |
 | CatBoost（无代价） | 250 轮，`depth=6`，`lr=0.05` | 训练代价中立 |
 | CatBoost（代价敏感） | 同上 + `class_weights=[1,10]` | 加权 + 阈值 |
@@ -798,7 +798,7 @@ E2 对比「CatBoost + 加权」与「CatBoost 不加权」，其余条件完全
 
 **（1）阈值对召回率的影响是决定性的。** 从 0.5 降到 0.091，召回率由 0.695 升至 0.957，漏报从 50 例降至 7 例，提升幅度远大于任何一个模型替换带来的差异。**但须区分两个维度**：这一操作改变的是「覆盖谁」，而非「总共花多少钱」。5.8.3 节的配对 Bootstrap 给出了直接证据——把阈值从 0.50 移到代价最优的 0.31，人均代价只变化 +0.24 元，95% 区间 [−7.91, 7.18] 跨零；被大幅改变的是召回率与误报数。因此「阈值比模型更值得优化」这句话，准确的说法是「就召回与覆盖而言，阈值比模型更值得优化」，而不能延伸为「阈值能降低期望代价」。原因见下一点。
 
-**（2）代价曲线在 [0, 0.5] 区间近乎平坦。** 图 5-2 显示，阈值从 0 到 0.5，人均代价始终在 76~81 元之间波动；只有超过 0.75 后才急剧上升。原因在于代价比 ρ=10 时，多预警一人只花 100 元，少漏一人可省 1000 元，因此在很宽的阈值区间内，误报的增加被漏报的减少所抵消。
+**（2）代价曲线在 [0, 0.5] 区间近乎平坦。** 图 5-2 显示，阈值从 0 到 0.5，人均代价始终在 75.9~81.6 元之间摆动（极差 5.72 元），且在 0.41 附近还出现过 75.91 元的低点；阈值超过 0.8 之后才急剧上升——0.81 时 83.0 元，0.86 时 94.8 元，0.91 时 138.0 元，0.96 时 199.6 元。原因在于代价比 ρ=10 时，多预警一人只花 100 元，少漏一人可省 1000 元，因此在很宽的阈值区间内，误报的增加被漏报的减少所抵消。
 
 **（3）平坦的代价曲线意味着阈值不可精确识别。** 三条策略的代价分别为 80.17、80.29、80.41，极差仅 0.24 元（0.3%）。这不是实现错误，而是数据本身的性质：当曲线平坦时，任何阈值都"差不多好"，此时应当依据业务约束（如教师可承担的名单规模）选择工作点，而非执着于数学最优。
 
@@ -845,7 +845,7 @@ E2 对比「CatBoost + 加权」与「CatBoost 不加权」，其余条件完全
 
 - AUC 一位不差，说明趋势特征**没有提供任何新的全局排序信息**，它们与 `days_since_last_event`、`last_3day_events` 等特征高度相关，模型用基础活跃特征就能复现同样的排序；
 - 代价的 5.47 元差异几乎全部来自**工作点偏移**：去掉这组特征后模型在边界附近更「没把握」，OOF 搜索把阈值压低了一档，预警名单因此长了 42%，误报随之增加。这与 5.3 节加权被阈值抵消、5.5 节阈值随 ρ 整段跳变是同一个机制；
-- 5.47 元与种子间标准差（E6 测得约 5 元）同量级，单次实验不足以支撑「保留趋势特征能降低代价」的断言。
+- 5.47 元与种子间标准差（E6 测得 2.3~5.9 元）同量级，单次实验不足以支撑「保留趋势特征能降低代价」的断言。
 
 因此本文的结论是：趋势特征的价值**既不在排序层面，也难以在代价层面证实**，其贡献有限且与基础活跃特征存在冗余。后续可考虑用特征选择方法压缩这组特征，或改用更强的序列建模方式（如对事件序列做注意力池化）替代人工设计的衰减特征。
 
@@ -907,7 +907,7 @@ $$
 | 主结果（未校准） | 0.3089 | 0.2193 | 0.750 | 0.329 | 80.41 |
 | 部署版（保序回归） | 0.1253 | **0.1350** | 0.750 | 0.330 | 80.29 |
 
-两者的代价差 0.12 元（部署版反而略低），远小于种子间标准差（约 6 元），说明校准在**不牺牲决策质量**的前提下把 Brier 降低了 38%。这一结果也构成第 6 章系统实现的依据：线上服务返回的 `risk_probability` 是校准后的概率，同时保留 `raw_probability` 字段，任何一次预警都可以回溯到模型原始输出。需要注意的是，表 5-8b 的 AUC（0.7356）与表 5-1 的 0.7288 并不完全相同——CatBoost 在多线程训练下存在微小的非确定性，这也是本文坚持用多种子重复而非单次运行下结论的原因之一。
+两者的代价差 0.12 元（部署版反而略低），远小于种子间标准差（约 6 元），说明校准在**不牺牲决策质量**的前提下把 Brier 降低了 38%。这一结果也构成第 6 章系统实现的依据：线上服务返回的 `risk_probability` 是校准后的概率，同时保留 `raw_probability` 字段，任何一次预警都可以回溯到模型原始输出。需要注意的是，表 5-8b 的 AUC（0.7356）与主结果的 0.7288 不同，但**并不是模型变了**：同一次运行里，未校准预测算出的 AUC 正是 0.7288、PR-AUC 正是 0.3604，与主结果逐位相同；保序回归是阶梯函数，把大量样本压进同一取值、产生大量并列，AUC 的并列对按 0.5 计权、PR 曲线的阶梯插值随之改变，数值才漂到 0.7356 / 0.3781。排序信息本身没有变（单调变换不改变顺序）。这条经验因此值得单列：**校准后不宜直接拿校准尺度的 AUC 与未校准的 AUC 相比**，阶梯化会让它小幅漂移，两者只有 Brier 与 ECE 才是同一把尺子下的可比指标。
 
 ### 5.7.4 个案分析
 
@@ -1011,13 +1011,15 @@ E6 变化的是切分，E7 固定主种子（42）的模型与测试集，只对
 
 但这绝不意味着阈值移动没有价值。5.4 节已指出，同一操作使召回率由 0.695 升至 0.750、漏报由 50 例降至 41 例。也就是说：**阈值移动改变的是「覆盖谁」，而不是「总共花多少钱」**。在代价曲线平坦的区间内，钱的总量由代价比本身决定，阈值只决定这笔钱花在漏报上还是误报上。把这两件事混为一谈，是应用型论文里最常见的表述错误之一——本文在此明确区分。
 
+这里还有一个必须点出的对照：在种子 42 这一份切分上，HGBDT 比代价敏感 CatBoost **便宜** 2.07 元（表 5-13 第三行）；而五个种子平均下来，HGBDT 比代价敏感 CatBoost **贵** 6.49 元（表 5-11 第二行）。同一对模型，单次切分与重复实验给出相反的结论，这正是 5.8.4 节「不要用单次切分下判断」最直白的注脚，也说明 5.2 节表 5-4 里的名次只对那一次切分成文。
+
 ### 5.8.4 统计显著性与实践显著性
 
 把 5.8.1~5.8.3 的结论放在一起，可以给出一个比「哪个模型更好」更有用的判断框架。
 
 **差异不显著，不等于模型可以任意互换。** 代价差异虽在噪声之内，但其他差异是确定的：CatBoost 原生支持类别特征，无需对 `course_id` 与 `username` 做独热编码，避免了维度膨胀与高基数带来的稀疏；逻辑回归单次全流程（含 6 次拟合）约 17~28 秒，CatBoost 约 235~346 秒，前者更适合快速迭代与教学演示；线性模型系数可直接读出方向与量级，在需要向教务人员解释"为什么预警这个学生"时成本更低。**当统计上分不出高下时，工程与解释成本就应当成为决策依据**——这是本文在模型选型上的实际立场。
 
-**差异显著，也不等于实践上重要。** 即便 HGBDT 与 CatBoost 的 6.49 元差异在更大样本上被确认为真，相对于表 4-1 标定的单次干预成本 100 元，它仍属二阶效应：把一名学生从漏报改为预警，节省的是 1000 元，相当于 335 次模型替换带来的收益。
+**差异显著，也不等于实践上重要。** 即便 HGBDT 与 CatBoost 的 6.49 元差异在更大样本上被确认为真，相对于表 4-1 标定的单次干预成本 100 元，它仍属二阶效应：把一名学生从漏报改为预警，节省的是 1000 元，相当于约 154 次模型替换带来的收益。
 
 **本节最重要的结论是负面的**：在本数据规模下，模型选择不是主要矛盾。真正决定干预效果的，是能否把决策阈值放到业务可承受的位置（5.5 节：预警规模可在 222~822 人之间连续调节），以及概率能否被教师按字面理解（5.7.3 节：ECE 可由 0.227 降至 0.025）。这两个环节的改进幅度都以数量级计，而模型替换的改进幅度以百分点计且不可靠。这一判断对资源有限的教务部门尤为实用：**先把决策与校准做对，再考虑换模型**。
 
@@ -1355,7 +1357,7 @@ $$
 
 **协议。** 用 TPE 采样 + MedianPruner，目标函数取训练集 3 折 OOF 上的人均期望代价，搜索空间覆盖迭代轮数（200~900）、树深（4~8）、学习率（0.01~0.2，对数）、L2 正则、随机强度、bagging 温度与分箱数。共执行 21 个 trial，9 个完成、12 个因中间代价明显劣于中位数被提前剪枝。测试集全程不参与目标函数。
 
-**表 5-10 调参前后：OOF 与测试集的背离**
+**表 5-23 调参前后：OOF 与测试集的背离**
 
 | 阶段 | 阈值 | ROC-AUC | 召回率 | 精确率 | 人均代价(元) |
 |---|---|---|---|---|---|
@@ -1382,7 +1384,7 @@ $$
 
 上一节末尾提出的问题是：真实数据可分性更强，调参是否就有空间？现在按完全相同的协议在 KDD Cup 2015 官方口径上重跑一遍（`scripts/tune.py --tag realdata`）。训练集 96,608 条、测试集 23,934 条、正类基率 79.28%，3 折分组 OOF 选参，测试集全程不参与目标函数；TPE 采样 + MedianPruner，20 个 trial，最终 12 个完成、8 个被剪枝。
 
-**表 5-23 真实数据上的调参前后（OOF，n = 96,608）**
+**表 5-24 真实数据上的调参前后（OOF，n = 96,608）**
 
 | 配置 | 迭代/深度/学习率 | OOF 人均代价(元) | 相对平凡基线 | 预警率 | ROC-AUC | 阈值 |
 |---|---|---|---|---|---|---|
@@ -1393,7 +1395,7 @@ OOF 上人均代价下降 **0.11 元（0.5%）**。这个幅度只有合成数�
 
 8 个被剪枝的 trial 也不能读作「这些参数更差」。MedianPruner 在第 1 折结束后把中间代价与已完成 trial 的中位数比较，而在这条被压平的水平线上，第 1 折的差异本身就落在噪声里——**剪枝在平坦的目标面上等价于随机截断**。剪枝比例（8/20）恰恰是「目标函数已无分辨力」的一个旁证，而不是搜索效率的体现。
 
-**表 5-24 调参收益的测试集验证（n = 23,934）**
+**表 5-25 调参收益的测试集验证（n = 23,934）**
 
 | 配置 | 阈值 | ROC-AUC | PR-AUC | 召回率 | 精确率 | Brier | 人均代价(元) | 预警率 | 漏报 | 误报 |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -1572,7 +1574,7 @@ pytest -q                                    # 运行测试
 
 **第五，在真实数据上界定了代价敏感学习的适用边界。** 以 KDD Cup 2015 官方训练集（120,542 条选课、8,157,277 条行为事件、辍学率 79.29%）复核全部机制性结论，发现当正类基率远高于代价最优阈值时（79.29% vs 0.0909），阈值决策退化为「全部预警」，模型相对平凡基线仅省 0.55%；把代价比降到 1 才恢复到 29.2%。据此提出两套替代工具——代价比扫描与容量（top-K）分析，后者在 70% 干预容量下相对随机挑人降低人均代价 39.0%、名单命中率 92.1%（基率 79.3%）。
 
-**主要结论**：在本数据上，模型替换对召回率的影响不超过 3 个百分点，而阈值从 0.5 移至代价最优位置可使召回率提升 26 个百分点；代价比在 1~20 区间内可连续调节预警规模（222 人至 822 人），为业务方提供了可操作的决策旋钮；类别加权会显著破坏概率校准（五种子上 Brier 由 0.137 升至 0.208），而事后保序回归校准可把期望校准误差由 0.227 降至 0.025、人均代价几乎不变，前提是校准后重新选择阈值。更重要的是，五个随机种子的重复实验与配对 Bootstrap 显示，参与比较的四个模型其人均代价差全部落在噪声区间内——**在本数据规模下，模型选择不是主要矛盾，决策与校准才是**。
+**主要结论**：在本数据上，除 LR（阈值极低，覆盖 91% 学生）外，模型替换对召回率的影响不到 5 个百分点，而阈值从 0.5 移至代价最优位置可使召回率提升 26 个百分点；代价比在 1~20 区间内可连续调节预警规模（222 人至 822 人），为业务方提供了可操作的决策旋钮；类别加权会显著破坏概率校准（五种子上 Brier 由 0.137 升至 0.208），而事后保序回归校准可把期望校准误差由 0.227 降至 0.025、人均代价几乎不变，前提是校准后重新选择阈值。更重要的是，五个随机种子的重复实验与配对 Bootstrap 显示，参与比较的四个模型其人均代价差全部落在噪声区间内——**在本数据规模下，模型选择不是主要矛盾，决策与校准才是**。
 
 真实数据进一步修正了这条结论的适用范围：**决策与校准之所以重要，是因为它们直接决定模型能否转化为可执行的名单；而它们能否奏效，又取决于代价矩阵与基率是否匹配**。当基率为 79.29% 时，连「最优阈值」本身都退化成了全报警，此时唯一站得住的决策形式是给定人力、按风险排序取前 K。这一发现把「代价敏感」从一个技术选项，还原为一个必须与业务规模联合标定的管理决策。
 
