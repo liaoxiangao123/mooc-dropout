@@ -1,0 +1,47 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', padding: 0, position: 'relative' }}>
+    <Box style={{ position: 'absolute', left: 0, top: 0, width: 1280, height: 76, background: '#1E4FA8', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 100, paddingRight: 60 }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>为什么门槛是 0.091，而不是 0.5</Text>
+        <Text style={{ fontSize: 15, color: '#B9CDEC', letterSpacing: 1 }}>02 / 06</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 100, top: 142, width: 520, display: 'flex', flexDirection: 'column' }}>
+        <Text style={{ fontSize: 15, color: '#8B97A8', letterSpacing: 1, marginBottom: 16 }}>两类错误的代价</Text>
+
+        <Box style={{ width: 520, background: '#F7F9FC', borderLeft: '3px solid #1E4FA8', padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <Text style={{ fontSize: 16, color: '#4A5568' }}>漏报 · 该被预警的学生没有预警</Text>
+            <Text style={{ fontSize: 40, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.15 }}>¥1,000</Text>
+        </Box>
+
+        <Box style={{ height: 16 }} />
+
+        <Box style={{ width: 520, background: '#F7F9FC', borderLeft: '3px solid #9FB6D9', padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <Text style={{ fontSize: 16, color: '#4A5568' }}>误报 · 不必干预的学生被打扰</Text>
+            <Text style={{ fontSize: 40, fontWeight: 'bold', color: '#3D7BD9', lineHeight: 1.15 }}>¥100</Text>
+        </Box>
+
+        <Box style={{ height: 26 }} />
+        <Text style={{ fontSize: 19, color: '#4A5568' }}>漏报 : 误报 = <span style={{ fontWeight: 'bold', color: '#1A2230' }}>10 : 1</span></Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 628, top: 278, display: 'flex' }}>
+        <svg width={56} height={22} viewBox="0 0 56 22">
+            <path d="M2 11 H45 M37 4 L47 11 L37 18" fill="none" stroke="#8FA8C9" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 700, top: 196, width: 470, display: 'flex', flexDirection: 'column' }}>
+        <Text style={{ fontSize: 15, color: '#8B97A8', letterSpacing: 1 }}>代价最优判定门槛</Text>
+        <Text style={{ fontSize: 104, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.1, letterSpacing: -2 }}>0.091</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8', marginTop: 6 }}>门槛 = 误报成本 ÷ (误报成本 + 漏报成本) = 100 ÷ 1,100</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 100, top: 516, width: 1080, background: '#E8EFF8', padding: '18px 28px' }}>
+        <Text style={{ fontSize: 19, color: '#1E4FA8', lineHeight: 1.55 }}>
+            同一模型、同一测试集：在 0.5 处漏掉 <span style={{ fontWeight: 'bold' }}>50 个</span>真正会辍学的学生，在 0.091 处只漏 <span style={{ fontWeight: 'bold' }}>7 个</span>
+            <br />
+            <span style={{ fontSize: 17, color: '#3D6FB8' }}>差别不在模型，在决策规则</span>
+        </Text>
+    </Box>
+
+    <Text style={{ position: 'absolute', left: 100, bottom: 34, fontSize: 13, color: '#B0BAC7' }}>合成数据 · 4,000 条选课 / 20.8 万条行为事件</Text>
+</Slide>

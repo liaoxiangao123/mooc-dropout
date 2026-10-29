@@ -1,0 +1,70 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', padding: 0, position: 'relative' }}>
+    <Box style={{ position: 'absolute', left: 0, top: 0, width: 1280, height: 76, background: '#1E4FA8', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 100, paddingRight: 60 }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>真实数据：排序很好，决策却退化了</Text>
+        <Text style={{ fontSize: 15, color: '#B9CDEC', letterSpacing: 1 }}>05 / 06</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 100, top: 116, width: 500, display: 'flex', flexDirection: 'column' }}>
+        <Text style={{ fontSize: 15, color: '#8B97A8', letterSpacing: 1, marginBottom: 10 }}>症状 · 同一套流程搬到 KDD Cup 2015</Text>
+
+        <Box style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', padding: '13px 0', borderBottom: '1px solid #E5E7EB' }}>
+            <Text style={{ fontSize: 17, color: '#4A5568' }}>排序能力　ROC-AUC</Text>
+            <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1A2230', lineHeight: 1.1 }}>0.84</Text>
+        </Box>
+
+        <Box style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', padding: '13px 0', borderBottom: '1px solid #E5E7EB' }}>
+            <Text style={{ fontSize: 17, color: '#4A5568' }}>预警比例　被判高风险</Text>
+            <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#D9534F', lineHeight: 1.1 }}>98.9%</Text>
+        </Box>
+
+        <Box style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', padding: '13px 0', borderBottom: '1px solid #E5E7EB' }}>
+            <Text style={{ fontSize: 17, color: '#4A5568' }}>相对「全部预警」的成本下降</Text>
+            <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1A2230', lineHeight: 1.1 }}>0.55%</Text>
+        </Box>
+
+        <Text style={{ fontSize: 16, color: '#4A5568', marginTop: 20, lineHeight: 1.65 }}>
+            原因是基率：这个数据集辍学率 <span style={{ fontWeight: 'bold', color: '#1A2230' }}>79.3%</span>，而 ρ=10 对应的门槛是 0.091 ——
+            <span style={{ fontWeight: 'bold', color: '#1A2230' }}>门槛落在概率分布的左尾之外</span>，于是「按阈值切」这个动作本身失效了
+        </Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 660, top: 116, width: 520, display: 'flex', flexDirection: 'column' }}>
+        <Text style={{ fontSize: 15, color: '#8B97A8', letterSpacing: 1, marginBottom: 10 }}>处方 · 补两件评估工具</Text>
+
+        <Box style={{ background: '#F7F9FC', padding: '20px 24px', display: 'flex', flexDirection: 'column' }}>
+            <Box style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline', gap: 10, marginBottom: 10 }}>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#3D7BD9' }}>01</Text>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1A2230' }}>把代价比降到 1</Text>
+            </Box>
+            <Text style={{ fontSize: 16, color: '#4A5568', lineHeight: 1.6 }}>
+                ρ 由 10 调到 1，相对下降回到 <span style={{ fontSize: 22, fontWeight: 'bold', color: '#1E4FA8' }}>29.2%</span>
+            </Text>
+            <Text style={{ fontSize: 14, color: '#8B97A8', marginTop: 6, lineHeight: 1.55 }}>
+                说明不是方法错了，是参数与基率没对齐
+            </Text>
+        </Box>
+
+        <Box style={{ height: 18 }} />
+
+        <Box style={{ background: '#F7F9FC', padding: '20px 24px', display: 'flex', flexDirection: 'column' }}>
+            <Box style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline', gap: 10, marginBottom: 10 }}>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#3D7BD9' }}>02</Text>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1A2230' }}>换决策形式：给定容量取前 K</Text>
+            </Box>
+            <Text style={{ fontSize: 16, color: '#4A5568', lineHeight: 1.6 }}>
+                70% 容量下，相对随机挑人省 <span style={{ fontSize: 22, fontWeight: 'bold', color: '#1E4FA8' }}>39.0%</span>
+            </Text>
+            <Text style={{ fontSize: 16, color: '#4A5568', lineHeight: 1.6, marginTop: 4 }}>
+                名单命中率 <span style={{ fontSize: 22, fontWeight: 'bold', color: '#1E4FA8' }}>92.1%</span>，基率只有 79.3%
+            </Text>
+        </Box>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 100, top: 536, width: 1080, background: '#E8EFF8', padding: '18px 28px' }}>
+        <Text style={{ fontSize: 19, color: '#1E4FA8', lineHeight: 1.5 }}>
+            排序好、决策废，这两件事可以同时成立 —— AUC 只看排序，代价只看决策，中间隔着基率
+        </Text>
+    </Box>
+
+    <Text style={{ position: 'absolute', left: 100, bottom: 30, fontSize: 13, color: '#B0BAC7' }}>KDD Cup 2015 训练集 · 120,542 条选课 / 815.7 万条行为事件 / 39 门课程</Text>
+</Slide>

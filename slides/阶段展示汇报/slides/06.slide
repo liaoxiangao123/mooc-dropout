@@ -1,0 +1,84 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', padding: 0, position: 'relative' }}>
+    <Box style={{ position: 'absolute', left: 0, top: 0, width: 1280, height: 76, background: '#1E4FA8', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 100, paddingRight: 60 }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>进度与下一步</Text>
+        <Text style={{ fontSize: 15, color: '#B9CDEC', letterSpacing: 1 }}>06 / 06</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 100, top: 124, width: 592, display: 'flex', flexDirection: 'column' }}>
+        <Text style={{ fontSize: 15, color: '#8B97A8', letterSpacing: 1, marginBottom: 24 }}>已完成 · 初稿与工程两线并进</Text>
+
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 34, marginBottom: 34 }}>
+            <Box style={{ width: 279, display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
+                <Text style={{ fontSize: 58, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1 }}>88</Text>
+                <Box style={{ display: 'flex', flexDirection: 'column', paddingBottom: 4 }}>
+                    <Text style={{ fontSize: 16, color: '#1A2230' }}>页 论文初稿</Text>
+                    <Text style={{ fontSize: 13, color: '#8B97A8', marginTop: 3 }}>正文七章全部完稿</Text>
+                </Box>
+            </Box>
+            <Box style={{ width: 279, display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
+                <Text style={{ fontSize: 58, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1 }}>45</Text>
+                <Box style={{ display: 'flex', flexDirection: 'column', paddingBottom: 4 }}>
+                    <Text style={{ fontSize: 16, color: '#1A2230' }}>张 表格</Text>
+                    <Text style={{ fontSize: 13, color: '#8B97A8', marginTop: 3 }}>全部与代码台账对齐</Text>
+                </Box>
+            </Box>
+        </Box>
+
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 34 }}>
+            <Box style={{ width: 279, display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
+                <Text style={{ fontSize: 58, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1 }}>13</Text>
+                <Box style={{ display: 'flex', flexDirection: 'column', paddingBottom: 4 }}>
+                    <Text style={{ fontSize: 16, color: '#1A2230' }}>张 图</Text>
+                    <Text style={{ fontSize: 13, color: '#8B97A8', marginTop: 3 }}>脚本可复现，改参数整链重跑</Text>
+                </Box>
+            </Box>
+            <Box style={{ width: 279, display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
+                <Text style={{ fontSize: 58, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1 }}>115</Text>
+                <Box style={{ display: 'flex', flexDirection: 'column', paddingBottom: 4 }}>
+                    <Text style={{ fontSize: 16, color: '#1A2230' }}>项 自动化测试</Text>
+                    <Text style={{ fontSize: 13, color: '#8B97A8', marginTop: 3 }}>全部通过</Text>
+                </Box>
+            </Box>
+        </Box>
+
+        <Box style={{ height: 1, background: '#E5E7EB', margin: '30px 0 18px 0' }} />
+        <Text style={{ fontSize: 15, color: '#4A5568', lineHeight: 1.7 }}>
+            原型系统可按周产出风险名单；判定阈值、风险等级与名单规模三项全部由配置驱动，不做硬编码
+        </Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 752, top: 124, width: 428, display: 'flex', flexDirection: 'column' }}>
+        <Text style={{ fontSize: 15, color: '#8B97A8', letterSpacing: 1, marginBottom: 24 }}>接下来两周</Text>
+
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 14, paddingBottom: 16, borderBottom: '1px solid #E5E7EB' }}>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#3D7BD9' }}>01</Text>
+            <Box style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <Text style={{ fontSize: 18, color: '#1A2230' }}>答辩 PPT 定稿</Text>
+                <Text style={{ fontSize: 14, color: '#8B97A8' }}>按本次框架扩到 15–20 页</Text>
+            </Box>
+        </Box>
+
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 14, padding: '16px 0', borderBottom: '1px solid #E5E7EB' }}>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#3D7BD9' }}>02</Text>
+            <Box style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <Text style={{ fontSize: 18, color: '#1A2230' }}>查重与降重</Text>
+                <Text style={{ fontSize: 14, color: '#8B97A8' }}>正文 5.9 万字，目标重复率 ≤ 15%</Text>
+            </Box>
+        </Box>
+
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 14, padding: '16px 0' }}>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#3D7BD9' }}>03</Text>
+            <Box style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <Text style={{ fontSize: 18, color: '#1A2230' }}>格式校对与提交</Text>
+                <Text style={{ fontSize: 14, color: '#8B97A8' }}>图表编号、参考文献、页眉页脚</Text>
+            </Box>
+        </Box>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 100, top: 556, width: 1080, background: '#1E4FA8', padding: '22px 30px' }}>
+        <Text style={{ fontSize: 21, color: '#FFFFFF', lineHeight: 1.55 }}>
+            一句话结论：代价敏感的收益，由 <span style={{ fontWeight: 'bold' }}>代价矩阵 × 基率 × 模型可分性</span> 三者共同决定 ——
+            脱离基率去设代价比，会得到一个技术上正确、业务上没用的模型
+        </Text>
+    </Box>
+</Slide>

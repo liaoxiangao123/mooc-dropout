@@ -1,0 +1,62 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', padding: 0, position: 'relative' }}>
+    <Box style={{ position: 'absolute', left: 0, top: 0, width: 1280, height: 76, background: '#1E4FA8', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 100, paddingRight: 60 }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>等价性成立，但模型没赢过零信息策略</Text>
+        <Text style={{ fontSize: 15, color: '#B9CDEC', letterSpacing: 1 }}>04 / 06</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 100, top: 118, width: 500, display: 'flex', flexDirection: 'column' }}>
+        <Text style={{ fontSize: 15, color: '#8B97A8', letterSpacing: 1, marginBottom: 6 }}>E2 消融 · 同一模型、同一测试集</Text>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1A2230', marginBottom: 14 }}>加权前后，工作点几乎没动</Text>
+
+        <Box style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', padding: '6px 0 8px 0', borderBottom: '1px solid #E5E7EB' }}>
+            <Text style={{ fontSize: 15, color: '#8B97A8' }}>指标</Text>
+            <Text style={{ fontSize: 15, color: '#8B97A8' }}>不加权　→　加权 ρ=10</Text>
+        </Box>
+
+        <Box style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '15px 0', borderBottom: '1px solid #E5E7EB' }}>
+            <Text style={{ fontSize: 18, color: '#4A5568' }}>召回率</Text>
+            <Box style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Text style={{ fontSize: 20, color: '#8B97A8' }}>0.7256</Text>
+                <Text style={{ fontSize: 16, color: '#B0BAC7' }}>→</Text>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230' }}>0.7195</Text>
+            </Box>
+        </Box>
+
+        <Box style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '15px 0', borderBottom: '1px solid #E5E7EB' }}>
+            <Text style={{ fontSize: 18, color: '#4A5568' }}>最优阈值</Text>
+            <Box style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Text style={{ fontSize: 20, color: '#8B97A8' }}>0.1193</Text>
+                <Text style={{ fontSize: 16, color: '#B0BAC7' }}>→</Text>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1E4FA8' }}>0.4950</Text>
+            </Box>
+        </Box>
+
+        <Box style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '15px 0', borderBottom: '1px solid #E5E7EB' }}>
+            <Text style={{ fontSize: 18, color: '#4A5568' }}>预警人数</Text>
+            <Box style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Text style={{ fontSize: 20, color: '#8B97A8' }}>299</Text>
+                <Text style={{ fontSize: 16, color: '#B0BAC7' }}>→</Text>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230' }}>292</Text>
+            </Box>
+        </Box>
+
+        <Text style={{ fontSize: 16, color: '#4A5568', marginTop: 16, lineHeight: 1.6 }}>
+            阈值被反向抬高了 4 倍，工作点却退回原处 —— 加权做的功，被阈值搜索抵消了
+        </Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 668, top: 104, width: 512, display: 'flex', flexDirection: 'column' }}>
+        <Image src="assets/cost_curve.png" style={{ width: 512, height: 319 }} />
+        <Text style={{ fontSize: 13, color: '#8B97A8', marginTop: 10, lineHeight: 1.55 }}>
+            图 5-2　测试集代价-阈值曲线（同源数据重绘）。左端即「全部预警」80.05 元；曲线在 [0, 0.5] 近乎平坦，
+            最低点 75.91 元是事后在测试集上挑的，不能用
+        </Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 100, top: 546, width: 1080, background: '#F7F9FC', borderLeft: '3px solid #1E4FA8', padding: '18px 28px' }}>
+        <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.55 }}>
+            但同一测试集上，「全部预警」人均代价 <span style={{ fontWeight: 'bold' }}>80.05 元</span>，本文流程 <span style={{ fontWeight: 'bold' }}>80.41 元</span> ——
+            <span style={{ color: '#4A5568' }}>高 0.36 元。模型目前的价值只在名单更短：374 人对 822 人。</span>
+        </Text>
+    </Box>
+</Slide>

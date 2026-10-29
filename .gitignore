@@ -46,3 +46,8 @@ reports/optuna/**/*.db
 
 # 本地诊断脚本与临时产物（核对口径用，不入仓）
 _scratch/
+
+# slidep 的本地工作目录（DSL 编译缓存与版本记录，可由 slides/*.slide 重生成）
+slides/**/.slidep/
+slides/**/.cache/
+slides/**/_preview_*.png
