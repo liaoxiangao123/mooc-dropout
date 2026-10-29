@@ -23,10 +23,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from mooc_dropout.config import get_settings  # noqa: E402
-from mooc_dropout.data.loader import load_kdd_cup  # noqa: E402
-from mooc_dropout.evaluation.cost import CostMatrix, cost_curve  # noqa: E402
-from mooc_dropout.repository.artifact_repository import ArtifactRepository  # noqa: E402
-from mooc_dropout.training.trainer import TrainConfig, Trainer  # noqa: E402
+from mooc_dropout.evaluation.cost import (  # noqa: E402
+    CostMatrix,
+    cost_curve,
+    cost_optimal_threshold,
+)
 
 PRIMARY = "#2f6fed"
 ACCENT = "#d93025"
@@ -34,6 +35,8 @@ MUTED = "#6b7280"
 GRID = "#e3e6eb"
 
 FIG_DIR = ROOT / "docs" / "figs"
+# 主模型（表 5-5）的冻结预测，由图 5-2 专用来避免与部署产物的校准尺度混用
+MAIN_PRED_NPZ = ROOT / "artifacts" / "extra" / "pred_cb_cs_seed42.npz"
 
 
 def setup_font() -> None:
@@ -100,31 +103,68 @@ def fig_model_comparison(reports: Path) -> Path:
     return path
 
 
-def fig_cost_curve(data_dir: Path, settings) -> tuple[Path, float]:
-    """重新计算测试集代价曲线（与训练脚本同一特征路径）。"""
-    enrollments, logs = load_kdd_cup(data_dir)
-    config = TrainConfig.from_settings(settings, model_name="catboost")
-    data = Trainer(config, settings).prepare(logs, enrollments)
+def fig_cost_curve(settings) -> tuple[Path, float]:
+    """画测试集上的代价-阈值曲线（图 5-2）。
 
-    artifacts = ArtifactRepository(settings.model_dir).load()
-    prob = artifacts.model.predict_proba(data.X_test)
+    数据源固定为 `artifacts/extra/pred_cb_cs_seed42.npz`，即表 5-5 那个主模型
+    （代价敏感 CatBoost、种子 42、5 折 OOF）的冻结预测，**不读部署产物**。
+    原因是部署产物可能是校准版（阈值 0.1253），与表 5-5 的未校准尺度（0.3089）
+    不属于同一条概率轴；一旦混用，图上就会出现「阈值 0.13、代价却是 0.31 处那个」的
+    张冠李戴。该 npz 由 `scripts/run_extra_experiments.py` 生成。
+
+    曲线上有两个点，含义完全不同，必须分开标注：
+    - **论文采用的阈值**：由 OOF 搜索确定（不看测试集），画出它在测试集上的实际代价；
+    - **曲线最低点**：事后在测试集上挑出来的，属信息泄漏，只能用来证明「曲面有多平、
+      阈值不可精确识别」，不能当作模型成绩。
+    """
+    if not MAIN_PRED_NPZ.exists():
+        raise FileNotFoundError(
+            f"缺少主模型冻结预测 {MAIN_PRED_NPZ}；"
+            "请先运行 python scripts/run_extra_experiments.py 生成"
+        )
+
+    frozen = np.load(MAIN_PRED_NPZ)
+    y_oof, prob_oof = frozen["y_train"], frozen["oof_train"]
+    y_test, prob_test = frozen["y_test"], frozen["prob_test"]
+
     matrix = CostMatrix(settings.cost_fn, settings.cost_fp)
-    curve = cost_curve(data.y_test, prob, matrix, n_points=99)
-    threshold = artifacts.threshold
+    threshold = cost_optimal_threshold(y_oof, prob_oof, matrix)["threshold"]
+    curve = cost_curve(y_test, prob_test, matrix, n_points=99)
 
     fig, ax = plt.subplots(figsize=(6.2, 3.8))
     ax.plot(curve["threshold"], curve["per_student_cost"], color=PRIMARY, linewidth=2, label="期望代价")
 
+    chosen_cost = matrix.per_student_cost(y_test, (prob_test >= threshold).astype(int))
     best = curve.loc[curve["per_student_cost"].idxmin()]
-    ax.scatter([threshold], [best["per_student_cost"]], color=ACCENT, zorder=5, s=36)
+
+    ax.scatter([threshold], [chosen_cost], color=ACCENT, zorder=5, s=36)
     ax.annotate(
-        f"t* = {threshold:.2f}\n¥{best['per_student_cost']:.1f}/人",
-        xy=(threshold, best["per_student_cost"]),
-        xytext=(threshold + 0.10, best["per_student_cost"] + 8),
+        f"OOF 选阈 t* = {threshold:.2f}\n¥{chosen_cost:.1f}/人",
+        xy=(threshold, chosen_cost),
+        xytext=(threshold + 0.04, chosen_cost + 7.0),
         fontsize=8,
         color=ACCENT,
         arrowprops={"arrowstyle": "-", "color": ACCENT, "lw": 0.8},
     )
+
+    ax.scatter(
+        [best["threshold"]],
+        [best["per_student_cost"]],
+        facecolors="white",
+        edgecolors=MUTED,
+        linewidths=1.1,
+        zorder=4,
+        s=26,
+    )
+    ax.annotate(
+        f"曲线最低 {best['threshold']:.2f}\n¥{best['per_student_cost']:.1f}/人",
+        xy=(best["threshold"], best["per_student_cost"]),
+        xytext=(best["threshold"] + 0.07, best["per_student_cost"] - 5.6),
+        fontsize=8,
+        color=MUTED,
+        arrowprops={"arrowstyle": "-", "color": MUTED, "lw": 0.8},
+    )
+    ax.set_ylim(bottom=best["per_student_cost"] - 7.0)
 
     at_half = curve.iloc[(curve["threshold"] - 0.5).abs().argsort()[:1]]["per_student_cost"].iloc[0]
     ax.axvline(0.5, color=MUTED, linestyle="--", linewidth=1)
@@ -203,7 +243,7 @@ def main() -> int:
     reports = settings.resolved_reports_dir
 
     print(fig_model_comparison(reports))
-    curve_path, at_half = fig_cost_curve(args.data_dir, settings)
+    curve_path, at_half = fig_cost_curve(settings)
     print(curve_path)
     print(f"0.5 阈值下人均代价: {at_half:.2f}")
     print(fig_sensitivity(reports))

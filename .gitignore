@@ -43,3 +43,6 @@ data/synthetic/*
 # Optuna 的 sqlite 库（二进制，可用 tune.py 重生成；按数据集分了子目录，故用 **）
 reports/optuna/*.db
 reports/optuna/**/*.db
+
+# 本地诊断脚本与临时产物（核对口径用，不入仓）
+_scratch/
