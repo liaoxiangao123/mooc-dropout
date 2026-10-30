@@ -10,7 +10,7 @@
 
 实验表明，模型间差异多落在种子噪声内，增益来自决策形式而非模型结构。
 
-**关键词**：MOOC；辍学预测；代价敏感学习；CatBoost；不平衡分类
+**关键词：**MOOC　辍学预测　代价敏感学习　CatBoost　不平衡分类
 
 ---
 
@@ -22,7 +22,7 @@ Using the KDD Cup 2015 XuetangX behavioural data, this thesis builds 44 behaviou
 
 The results indicate that differences between models fall within seed noise: the gain comes from the form of the decision rather than from the model structure.
 
-**Key words**: MOOC; dropout prediction; cost-sensitive learning; CatBoost; imbalanced classification
+**Key Words:** MOOC; dropout prediction; cost-sensitive learning; CatBoost; imbalanced classification
 
 ---
 

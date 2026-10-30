@@ -551,35 +551,30 @@ class Writer:
 
     def add_declaration(self, title: str) -> None:
         self.doc.add_page_break()
-        self._front_heading("独创性声明")
-        paras = (
-            f"本人郑重声明：所呈交的毕业设计（论文）《{title}》是本人在指导教师的指导下，"
-            "独立进行研究工作所取得的成果。除文中已经注明引用的内容外，本论文不包含任何"
-            "其他个人或集体已经发表或撰写过的作品成果。对本文的研究做出重要贡献的个人和"
-            "集体，均已在文中以明确方式标明。本人完全意识到本声明的法律后果由本人承担。",
-            "本人同意学校保留并向国家有关部门或机构送交论文的复印件和电子版，允许论文被"
-            "查阅和借阅。本人授权学校可以将本论文的全部或部分内容编入有关数据库进行检索，"
-            "可以采用影印、缩印或扫描等复制手段保存和汇编本论文。",
+        # 标题与正文措辞照抄学校《本科毕业论文（设计）写作与排版打印规范》的原文，
+        # 不自拟——这类声明各校措辞不同，自行改写容易被要求重签。
+        self._front_heading("毕业论文（设计）原创性声明")
+        p = self.doc.add_paragraph()
+        first_line_chars(p, 200)
+        p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        p.paragraph_format.line_spacing = LINE_PT
+        text = (
+            "本人郑重声明：所呈交的学位论文，是本人在导师的指导下，独立进行研究工作所取得的"
+            "成果。除文中已经注明引用的内容外，本论文不含任何其他个人或集体已经发表或撰写过"
+            "的作品成果。对本文的研究做出重要贡献的个人和集体，均已在文中以明确方式标明。"
+            "本人完全意识到本声明的法律结果由本人承担。"
         )
-        for text in paras:
-            p = self.doc.add_paragraph()
-            first_line_chars(p, 200)
-            p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-            p.paragraph_format.line_spacing = LINE_PT
-            p.paragraph_format.space_after = Pt(10)
-            run = p.add_run(text)
-            run_font(run, LATIN, SONG)
-            run.font.size = Pt(BODY_PT)
+        run = p.add_run(text)
+        run_font(run, LATIN, SONG)
+        run.font.size = Pt(BODY_PT)
 
-        for line in ("作者签名：＿＿＿＿＿＿＿＿　　日期：＿＿＿＿年＿＿月＿＿日",
-                     "指导教师签名：＿＿＿＿＿＿　　日期：＿＿＿＿年＿＿月＿＿日"):
-            p = self.doc.add_paragraph()
-            no_indent(p)
-            p.paragraph_format.line_spacing = LINE_PT
-            p.paragraph_format.space_before = Pt(36)
-            run = p.add_run(line)
-            run_font(run, LATIN, KAI)
-            run.font.size = Pt(BODY_PT)
+        sig = self.doc.add_paragraph()
+        no_indent(sig)
+        sig.paragraph_format.line_spacing = LINE_PT
+        sig.paragraph_format.space_before = Pt(48)
+        run = sig.add_run("论文作者签名：＿＿＿＿＿＿＿＿　　　　年　　月　　日")
+        run_font(run, LATIN, SONG)
+        run.font.size = Pt(BODY_PT)
 
     # -- 标题
     def heading(self, level: int, text: str) -> None:
