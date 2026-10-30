@@ -51,3 +51,6 @@ _scratch/
 slides/**/.slidep/
 slides/**/.cache/
 slides/**/_preview_*.png
+
+# CatBoost 训练时自动落盘的日志目录
+catboost_info/

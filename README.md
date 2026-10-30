@@ -94,6 +94,15 @@ python scripts/tune.py --trials 30               # E9，目标 = OOF 期望代�
 python scripts/train.py --data-dir data/synthetic --calibration isotonic
 ```
 
+重新排版论文（Markdown → Word → PDF）：
+
+```bash
+python scripts/md_to_docx.py                     # 生成 docx：封面 + 独创性声明 + 摘要/目录 + 正文
+powershell -ExecutionPolicy Bypass -File scripts/export_pdf.ps1   # Word 更新目录域后导出 PDF
+```
+
+第二步不能省：docx 里的目录是 TOC 域，不更新就导出，读者看到的是一句「右键更新域」的占位提示。封面信息（校名/学院/学号/指导教师）改 `docs/封面信息.json`，不必动排版代码。
+
 超参搜索在真实数据上重跑（E9 / E9b）：产物按 `--tag` 分开存放，不会覆盖合成数据那份：
 
 ```bash

@@ -25,6 +25,7 @@ import sys
 from pathlib import Path
 
 from docx import Document
+from docx.enum.section import WD_SECTION
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -71,6 +72,53 @@ TBLPR_ORDER = [
     "w:tblBorders", "w:shd", "w:tblLayout", "w:tblCellMar", "w:tblLook",
     "w:tblCaption", "w:tblDescription", "w:tblPrChange",
 ]
+SECTPR_ORDER = [
+    "w:footnotePr", "w:endnotePr", "w:type", "w:pgSz", "w:pgMar", "w:paperSrc",
+    "w:pgBorders", "w:lnNumType", "w:pgNumType", "w:cols", "w:formProt", "w:vAlign",
+    "w:noEndnote", "w:titlePg", "w:textDirection", "w:bidi", "w:rtlGutter",
+    "w:docGrid", "w:printerSettings", "w:sectPrChange",
+]
+
+# 封面字段。改这里就能重出一版封面，不必动排版代码。
+# 想改成学校自己的字段名，直接改这个字典的键即可（键名会原样印在封面上）。
+COVER_INFO = {
+    "学校名称": "××大学",
+    "论文类型": "本科毕业设计（论文）",
+    "学院": "××学院",
+    "专业": "××专业",
+    "姓名": "×××",
+    "学号": "××××××××",
+    "指导教师": "×××",
+    "完成日期": "2026 年 11 月",
+}
+
+
+def load_cover_info(root: Path) -> dict[str, str]:
+    """若 docs/封面信息.json 存在则覆盖默认值，方便不改代码填个人信息。"""
+    info = dict(COVER_INFO)
+    path = root / "docs" / "封面信息.json"
+    if path.exists():
+        import json
+        info.update({k: str(v) for k, v in json.loads(path.read_text("utf-8")).items()})
+    return info
+
+
+def split_cover_title(title: str, limit: int = 20) -> list[str]:
+    """封面题目过长时，优先在拉丁词（MOOC / CatBoost）之前断行，避免把中文词切开。"""
+    if len(title) <= limit:
+        return [title]
+    spaces = [m.start() for m in re.finditer(r"\s+", title)]
+    if not spaces:
+        return [title]
+    before_latin = [
+        i for i in spaces
+        if i + 1 < len(title) and title[i + 1].isascii() and title[i + 1].isalpha()
+    ]
+    pool = before_latin or spaces
+    mid = len(title) / 2
+    cut = min(pool, key=lambda i: abs(i - mid))
+    return [title[:cut].strip(), title[cut:].strip()]
+
 
 
 def tw(cm: float) -> int:
@@ -374,12 +422,8 @@ def build_document() -> Document:
         if style_name == "目录标题":
             st.paragraph_format.page_break_before = True
 
-    footer_p = sec.footer.paragraphs[0]
-    footer_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    add_field(footer_p, "PAGE", "1")
-    for run in footer_p.runs:
-        run_font(run, LATIN, SONG)
-        run.font.size = Pt(CAPTION_PT)
+    # 封面与独创性声明不编页码：页脚留空，页码由后面两节各自设置
+    # （前言节用罗马数字，正文节从 1 重新起算，见 Writer.new_section）。
 
     return doc
 
@@ -395,6 +439,7 @@ class Writer:
                       "math_fallback": 0, "heading": 0}
         self.seen_title = False
         self.toc_done = False
+        self._suppress_break = False   # 刚插过分节符，下一个章标题不再另起一页
 
     # -- 段落
     def para(self, text: str, *, indent: bool = True, align=None, ea: str = SONG,
@@ -420,19 +465,128 @@ class Writer:
         p.paragraph_format.space_after = Pt(30)
         add_inline(p, text, ea=KAI, size=14, color=GREY, stats=self.stats)
 
+    # -- 前置件：封面、独创性声明、分节页码
+    def _front_heading(self, text: str) -> None:
+        """前置件的居中标题（不进目录，所以不用 Heading 样式）。"""
+        p = self.doc.add_paragraph()
+        no_indent(p)
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        pf = p.paragraph_format
+        pf.line_spacing = 1.5
+        pf.space_before, pf.space_after = Pt(0), Pt(24)
+        run = p.add_run(text)
+        run_font(run, LATIN, HEI)
+        run.font.size = Pt(16)
+        run.font.bold = True
+
+    def _set_page_format(self, section, fmt: str) -> None:
+        """本节页码从 1 起算并指定格式（decimal / lowerRoman）。"""
+        sectPr = section._sectPr
+        old = sectPr.find(qn("w:pgNumType"))
+        if old is not None:
+            sectPr.remove(old)
+        el = OxmlElement("w:pgNumType")
+        el.set(qn("w:start"), "1")
+        el.set(qn("w:fmt"), fmt)
+        _insert_ordered(sectPr, el, SECTPR_ORDER)
+
+    def _numbered_footer(self, section) -> None:
+        section.footer.is_linked_to_previous = False
+        p = section.footer.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        add_field(p, "PAGE", "1")
+        for run in p.runs:
+            run_font(run, LATIN, SONG)
+            run.font.size = Pt(CAPTION_PT)
+
+    def new_section(self, fmt: str | None) -> None:
+        """新起一节：fmt 为 None 表示这一节不编页码。"""
+        sec = self.doc.add_section(WD_SECTION.NEW_PAGE)
+        sec.footer.is_linked_to_previous = False
+        if fmt is not None:
+            self._numbered_footer(sec)
+            self._set_page_format(sec, fmt)
+        self._suppress_break = True   # 分节符已经换页，下一个章标题不必再换
+
+    def add_cover(self, title: str) -> None:
+        info = load_cover_info(self.md_dir.parent)
+
+        def centered(text: str, size: float, ea: str = HEI, bold: bool = False,
+                     before: float = 0, after: float = 0) -> None:
+            p = self.doc.add_paragraph()
+            no_indent(p)
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            pf = p.paragraph_format
+            pf.line_spacing = 1.5
+            pf.space_before, pf.space_after = Pt(before), Pt(after)
+            run = p.add_run(text)
+            run_font(run, LATIN, ea)
+            run.font.size = Pt(size)
+            run.font.bold = bold
+
+        centered(info["学校名称"], 26, before=48, after=14, bold=False)
+        centered(info["论文类型"], 22, after=54)
+        for part in split_cover_title(title):
+            centered(part, 22, after=6)
+        centered("", 12, after=60)
+        for key in ("学院", "专业", "姓名", "学号", "指导教师"):
+            value = info.get(key, "")
+            if not value:
+                continue
+            label = key.ljust(5, "\u3000")
+            centered(f"{label}：{value}", 14, ea=KAI, after=10)
+        centered(info["完成日期"], 16, ea=KAI, before=60)
+
+    def add_declaration(self, title: str) -> None:
+        self.doc.add_page_break()
+        self._front_heading("独创性声明")
+        paras = (
+            f"本人郑重声明：所呈交的毕业设计（论文）《{title}》是本人在指导教师的指导下，"
+            "独立进行研究工作所取得的成果。除文中已经注明引用的内容外，本论文不包含任何"
+            "其他个人或集体已经发表或撰写过的作品成果。对本文的研究做出重要贡献的个人和"
+            "集体，均已在文中以明确方式标明。本人完全意识到本声明的法律后果由本人承担。",
+            "本人同意学校保留并向国家有关部门或机构送交论文的复印件和电子版，允许论文被"
+            "查阅和借阅。本人授权学校可以将本论文的全部或部分内容编入有关数据库进行检索，"
+            "可以采用影印、缩印或扫描等复制手段保存和汇编本论文。",
+        )
+        for text in paras:
+            p = self.doc.add_paragraph()
+            first_line_chars(p, 200)
+            p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+            p.paragraph_format.line_spacing = 1.5
+            p.paragraph_format.space_after = Pt(10)
+            run = p.add_run(text)
+            run_font(run, LATIN, SONG)
+            run.font.size = Pt(BODY_PT)
+
+        for line in ("作者签名：＿＿＿＿＿＿＿＿　　日期：＿＿＿＿年＿＿月＿＿日",
+                     "指导教师签名：＿＿＿＿＿＿　　日期：＿＿＿＿年＿＿月＿＿日"):
+            p = self.doc.add_paragraph()
+            no_indent(p)
+            p.paragraph_format.line_spacing = 1.5
+            p.paragraph_format.space_before = Pt(36)
+            run = p.add_run(line)
+            run_font(run, LATIN, KAI)
+            run.font.size = Pt(BODY_PT)
+
     # -- 标题
     def heading(self, level: int, text: str) -> None:
         if not self.seen_title and level == 1:
-            p = self.doc.add_paragraph(style="论文题目")
-            add_inline(p, text, keep_font=True, stats=self.stats)
+            self.add_cover(text)
+            self.add_declaration(text)
+            self.new_section("lowerRoman")
             self.seen_title = True
             self.stats["heading"] += 1
             return
 
         if not self.toc_done and re.match(r"^第\s*1\s*章", text):
             self.add_toc()
+            self.new_section("decimal")
 
         p = self.doc.add_paragraph(style=f"Heading {min(level, 3)}")
+        if self._suppress_break:
+            p.paragraph_format.page_break_before = False
+            self._suppress_break = False
         add_inline(p, text, keep_font=True, stats=self.stats)
         self.stats["heading"] += 1
 
@@ -780,7 +934,7 @@ def convert(md_path: Path, out_path: Path) -> dict:
         w.para(" ".join(buf))
 
     doc.core_properties.title = "基于代价敏感 CatBoost 的 MOOC 辍学风险预测研究"
-    doc.core_properties.subject = "本科毕业设计（论文）初稿"
+    doc.core_properties.subject = "本科毕业设计（论文）"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     doc.save(out_path)
 
