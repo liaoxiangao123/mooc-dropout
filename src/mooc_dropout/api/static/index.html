@@ -102,12 +102,21 @@
   .kv div:nth-child(odd) { color: var(--muted); }
   code { background: #f1f3f6; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
   footer { max-width: 1180px; margin: 0 auto; padding: 0 32px 40px; color: var(--muted); font-size: 12px; }
+  .chip {
+    display: inline-block; padding: 2px 9px; border-radius: 999px;
+    background: #fff4e5; color: #8a5300; font-size: 11.5px; font-weight: 600;
+    margin-left: 8px; vertical-align: 3px; letter-spacing: .2px;
+  }
+  .sep td {
+    color: var(--muted); font-size: 11.5px; padding: 14px 6px 4px;
+    border-bottom: none; font-weight: 500;
+  }
   .hidden { display: none; }
 </style>
 </head>
 <body>
 <header>
-  <h1>MOOC 辍学风险预测 · 原型演示</h1>
+  <h1>MOOC 辍学风险预测 · 原型演示<span class="chip">演示数据 · 非真实学生记录</span></h1>
   <div class="sub">代价敏感 CatBoost · 输入学习者行为事件，输出辍学概率、风险等级与关键致险因子</div>
 </header>
 
@@ -313,9 +322,13 @@
       : data.raw_probability.toFixed(4);
     $("explain-ver").textContent = data.model_version;
 
+    // 因子按方向分组渲染。后端按 |贡献| 排序，正负会交替出现；直接照搬时，
+    // 一个判为高风险的学生，表格前几行可能全是负贡献，和结论读起来像反的。
+    const factors = data.top_factors || [];
     const tbody = $("factors");
     tbody.innerHTML = "";
-    (data.top_factors || []).forEach((f) => {
+
+    const appendRow = (f) => {
       const tr = document.createElement("tr");
       const value = typeof f.value === "number" ? f.value.toFixed(2) : f.value;
       const contribution = f.contribution === null || f.contribution === undefined
@@ -324,9 +337,30 @@
       const cls = f.direction === "risk_up" ? "up" : (f.direction === "risk_down" ? "down" : "");
       tr.innerHTML = `<td>${f.feature}</td><td>${value}</td><td class="${cls}">${contribution}</td>`;
       tbody.appendChild(tr);
-    });
-    if (!(data.top_factors || []).length) {
+    };
+    const appendSep = (text) => {
+      const tr = document.createElement("tr");
+      tr.className = "sep";
+      tr.innerHTML = `<td colspan="3">${text}</td>`;
+      tbody.appendChild(tr);
+    };
+
+    if (!factors.length) {
       tbody.innerHTML = '<tr><td colspan="3" style="color:var(--muted)">模型未返回因子明细</td></tr>';
+    } else {
+      const up = factors.filter((f) => f.direction === "risk_up");
+      const down = factors.filter((f) => f.direction === "risk_down");
+      const plain = factors.filter((f) => f.direction !== "risk_up" && f.direction !== "risk_down");
+      const grouped = up.length > 0 && down.length > 0;
+      if (up.length) {
+        if (grouped) appendSep("推高风险 ↑");
+        up.forEach(appendRow);
+      }
+      if (down.length) {
+        if (grouped) appendSep("拉低风险 ↓");
+        down.forEach(appendRow);
+      }
+      plain.forEach(appendRow);
     }
   }
 
