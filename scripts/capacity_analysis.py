@@ -124,7 +124,7 @@ def plot(curves: dict[str, pd.DataFrame], out_path: Path) -> None:
 
     fig.tight_layout()
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_path, bbox_inches="tight")
+    fig.savefig(out_path, bbox_inches="tight", dpi=300)
     plt.close(fig)
 
 

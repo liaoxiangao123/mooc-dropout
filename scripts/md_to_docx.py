@@ -40,6 +40,7 @@ import omml  # noqa: E402
 
 SONG, HEI, KAI, MONO, LATIN = "宋体", "黑体", "楷体", "Consolas", "Times New Roman"
 BODY_PT = 12.0          # 小四
+LINE_PT = Pt(24)        # 固定行距 24 磅（学校规范：行间距 24 磅）
 CAPTION_PT = 10.5       # 五号
 TABLE_PT = 10.5
 CODE_PT = 9.0           # 小五
@@ -150,6 +151,11 @@ def _set_rfonts(rpr, latin: str, ea: str) -> None:
     if rfonts is None:
         rfonts = OxmlElement("w:rFonts")
         rpr.insert(0, rfonts)
+    # 关键：内置样式自带 asciiTheme/eastAsiaTheme 等主题字体属性，而主题属性的
+    # 优先级高于显式字体名。不清掉它们，设了 eastAsia="宋体" 也不生效——标题会
+    # 悄悄变成 Word 主题字体（等线/Calibri Light），打印出来和规范不符。
+    for attr in ("w:asciiTheme", "w:hAnsiTheme", "w:eastAsiaTheme", "w:cstheme"):
+        rfonts.attrib.pop(qn(attr), None)
     rfonts.set(qn("w:ascii"), latin)
     rfonts.set(qn("w:hAnsi"), latin)
     rfonts.set(qn("w:cs"), latin)
@@ -373,54 +379,60 @@ def build_document() -> Document:
 
     sec = doc.sections[0]
     sec.page_width, sec.page_height = Cm(21), Cm(29.7)
-    sec.top_margin, sec.bottom_margin = Cm(2.5), Cm(2.5)
+    # 学校规范：上 3 / 下 2.5 / 左 3 / 右 2.5 cm，左侧装订
+    sec.top_margin, sec.bottom_margin = Cm(3.0), Cm(2.5)
     sec.left_margin, sec.right_margin = Cm(3.0), Cm(2.5)
     sec.header_distance, sec.footer_distance = Cm(1.5), Cm(1.75)
 
     normal = doc.styles["Normal"]
     style_font(normal, LATIN, SONG, BODY_PT, bold=False, color=BLACK)
     pf = normal.paragraph_format
-    pf.line_spacing = 1.5
+    pf.line_spacing = LINE_PT
     pf.space_before = Pt(0)
     pf.space_after = Pt(0)
     pf.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
 
-    for name, size, center, before, after in (
-        ("Heading 1", 16, True, 6, 18),
-        ("Heading 2", 14, False, 12, 6),
-        ("Heading 3", 12, False, 6, 3),
+    # 规范：一级标题宋体小三加黑居中、段前段后 16 磅；二级宋体四号加黑、
+    # 三级宋体小四加黑，均顶格、段前段后 12 磅；各级标题行距 24 磅。
+    for name, size, center, gap in (
+        ("Heading 1", 15, True, 16),
+        ("Heading 2", 14, False, 12),
+        ("Heading 3", 12, False, 12),
     ):
         st = doc.styles[name]
-        style_font(st, LATIN, HEI, size, bold=True, color=BLACK)
+        style_font(st, LATIN, SONG, size, bold=True, color=BLACK)
         pf = st.paragraph_format
         pf.alignment = WD_ALIGN_PARAGRAPH.CENTER if center else WD_ALIGN_PARAGRAPH.LEFT
-        pf.space_before, pf.space_after = Pt(before), Pt(after)
-        pf.line_spacing = 1.5
+        pf.space_before, pf.space_after = Pt(gap), Pt(gap)
+        pf.line_spacing = LINE_PT
         pf.first_line_indent = Pt(0)
         pf.keep_with_next = True
         if name == "Heading 1":
             pf.page_break_before = True
 
-    title = doc.styles.add_style("论文题目", WD_STYLE_TYPE.PARAGRAPH)
-    title.base_style = doc.styles["Normal"]
-    style_font(title, LATIN, HEI, 22, bold=True, color=BLACK)
-    title.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    title.paragraph_format.space_before = Pt(105)
-    title.paragraph_format.space_after = Pt(14)
-    title.paragraph_format.first_line_indent = Pt(0)
-
-    for style_name, size, ea, bold in (("图表题", CAPTION_PT, SONG, False),
-                                       ("目录标题", 16, HEI, True)):
+    # 目录页：宋体小二号加黑居中，段前段后 16 磅；条目按学校示例用宋体小四
+    for style_name, size, ea, bold, gap in (
+        ("图表题", CAPTION_PT, SONG, False, 6),
+        ("目录标题", 18, SONG, True, 16),
+    ):
         st = doc.styles.add_style(style_name, WD_STYLE_TYPE.PARAGRAPH)
         st.base_style = doc.styles["Normal"]
         style_font(st, LATIN, ea, size, bold=bold, color=BLACK)
         st.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
         st.paragraph_format.first_line_indent = Pt(0)
         st.paragraph_format.line_spacing = 1.25
-        st.paragraph_format.space_before = Pt(6)
-        st.paragraph_format.space_after = Pt(18 if style_name == "目录标题" else 12)
+        st.paragraph_format.space_before = Pt(gap)
+        st.paragraph_format.space_after = Pt(gap or 12)
         if style_name == "目录标题":
             st.paragraph_format.page_break_before = True
+
+    title = doc.styles.add_style("论文题目", WD_STYLE_TYPE.PARAGRAPH)
+    title.base_style = doc.styles["Normal"]
+    style_font(title, LATIN, SONG, 22, bold=True, color=BLACK)
+    title.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    title.paragraph_format.space_before = Pt(105)
+    title.paragraph_format.space_after = Pt(14)
+    title.paragraph_format.first_line_indent = Pt(0)
 
     # 封面与独创性声明不编页码：页脚留空，页码由后面两节各自设置
     # （前言节用罗马数字，正文节从 1 重新起算，见 Writer.new_section）。
@@ -450,7 +462,7 @@ class Writer:
         else:
             no_indent(p)
         p.alignment = align if align is not None else WD_ALIGN_PARAGRAPH.JUSTIFY
-        p.paragraph_format.line_spacing = 1.5
+        p.paragraph_format.line_spacing = LINE_PT
         # 表题在表格之前，必须与表格同页；图题在图片之后，图片已设 keep_with_next。
         if re.match(r"^\*\*表\s*\d+[-–]\d+", text.strip()):
             p.paragraph_format.keep_with_next = True
@@ -472,7 +484,7 @@ class Writer:
         no_indent(p)
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         pf = p.paragraph_format
-        pf.line_spacing = 1.5
+        pf.line_spacing = LINE_PT
         pf.space_before, pf.space_after = Pt(0), Pt(24)
         run = p.add_run(text)
         run_font(run, LATIN, HEI)
@@ -517,7 +529,7 @@ class Writer:
             no_indent(p)
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
             pf = p.paragraph_format
-            pf.line_spacing = 1.5
+            pf.line_spacing = LINE_PT
             pf.space_before, pf.space_after = Pt(before), Pt(after)
             run = p.add_run(text)
             run_font(run, LATIN, ea)
@@ -553,7 +565,7 @@ class Writer:
             p = self.doc.add_paragraph()
             first_line_chars(p, 200)
             p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-            p.paragraph_format.line_spacing = 1.5
+            p.paragraph_format.line_spacing = LINE_PT
             p.paragraph_format.space_after = Pt(10)
             run = p.add_run(text)
             run_font(run, LATIN, SONG)
@@ -563,7 +575,7 @@ class Writer:
                      "指导教师签名：＿＿＿＿＿＿　　日期：＿＿＿＿年＿＿月＿＿日"):
             p = self.doc.add_paragraph()
             no_indent(p)
-            p.paragraph_format.line_spacing = 1.5
+            p.paragraph_format.line_spacing = LINE_PT
             p.paragraph_format.space_before = Pt(36)
             run = p.add_run(line)
             run_font(run, LATIN, KAI)
@@ -593,14 +605,14 @@ class Writer:
     def add_toc(self) -> None:
         head = self.doc.add_paragraph(style="目录标题")
         run = head.add_run("目　　录")
-        run_font(run, LATIN, HEI)
-        run.font.size = Pt(16)
+        run_font(run, LATIN, SONG)
+        run.font.size = Pt(18)
 
         p = self.doc.add_paragraph()
         no_indent(p)
         p.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        p.paragraph_format.line_spacing = 1.5
-        add_field(p, 'TOC \\o "1-3" \\h \\z \\u',
+        p.paragraph_format.line_spacing = LINE_PT
+        add_field(p, 'TOC \\o "1-2" \\h \\z \\u',
                   "【目录：在 Word 中右键 → 更新域，即可自动生成】")
         self.toc_done = True
 
@@ -618,7 +630,7 @@ class Writer:
         p = self.doc.add_paragraph()
         no_indent(p)
         pf = p.paragraph_format
-        pf.line_spacing = 1.5
+        pf.line_spacing = LINE_PT
         pf.space_before = Pt(6)
         pf.space_after = Pt(6)
 
@@ -765,7 +777,7 @@ class Writer:
     def list_item(self, text: str, marker: str) -> None:
         p = self.doc.add_paragraph()
         pf = p.paragraph_format
-        pf.line_spacing = 1.5
+        pf.line_spacing = LINE_PT
         pf.left_indent = Cm(0.74)
         pf.first_line_indent = Cm(-0.74)
         pPr = p._p.get_or_add_pPr()
