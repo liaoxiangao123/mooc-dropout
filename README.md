@@ -1,5 +1,7 @@
 # MOOC 辍学风险预测（代价敏感 CatBoost）
 
+[![CI](https://github.com/liaoxiangao123/mooc-dropout/actions/workflows/ci.yml/badge.svg)](https://github.com/liaoxiangao123/mooc-dropout/actions/workflows/ci.yml)　[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 > 毕业设计原型系统：基于 KDD Cup 2015（学堂在线）学习行为数据，预测选课学习者的辍学风险。
 > 核心不是「把 AUC 刷高」，而是**把预测准确升级为决策代价最小**。
 
@@ -76,7 +78,7 @@ python scripts/capacity_analysis.py --auto    # 限额干预 top-K：名单开�
 运行测试：
 
 ```bash
-pytest -q          # 115 个用例
+pytest -q          # 126 个用例
 ```
 
 运行论文实验（基线对比 / 代价比敏感性 / 特征消融）：
@@ -151,10 +153,14 @@ mooc-dropout/
 │   ├── service/             # 业务服务层（不依赖 HTTP）
 │   └── api/                 # FastAPI 控制器、中间件、演示页
 ├── scripts/                 # 生成数据 / 训练 / 实验 / 调参 / 容量与代价比分析 / 启动
-├── tests/                   # 115 个自动化测试用例
+├── tests/                   # 126 个自动化测试用例（含 /docs 本地化 11 条）
 ├── requirements.lock.txt    # 实测通过的精确版本（复现用）
-├── docs/                    # 13 份项目文档（00~12）+ 论文初稿（md/docx/pdf）与 13 张插图
+├── docs/                    # 13 份项目文档（00~12）+ 论文初稿（md/docx/pdf）与 16 张插图
 ├── artifacts/               # 模型产物（不提交：体积大，可用脚本重生成）
+├── db/schema.sql            # 等价关系模型：8 张表 + 44 维特征字典（迁移起点，非运行依赖）
+├── data/sample/request.json # 可直接 POST 的请求样例（/v1/predict 用）
+├── Dockerfile               # 一条 docker run 出可访问的演示环境（内含合成模型）
+├── .github/workflows/ci.yml # CI：ruff + mypy + 全量测试 + 起服务打接口
 └── reports/                 # 指标与实验台账（csv/json 与手写报告已提交，
                              #   只忽略 *.png 与 coverage/ —— 论文里的数字要能对着仓库查）
 ```
@@ -183,7 +189,7 @@ mooc-dropout/
 | POST | `/v1/intervention-list` | 导出干预名单 CSV（按风险降序，可直接派单） |
 | GET | `/v1/model/info` | 模型版本、阈值、代价矩阵、指标 |
 | GET | `/v1/model/features` | 特征字典（分组 + 业务含义） |
-| GET | `/docs` | OpenAPI 交互文档 |
+| GET | `/docs` | OpenAPI 交互文档（**离线可用**，见下方说明） |
 
 请求示例：
 
@@ -212,6 +218,11 @@ curl -X POST http://127.0.0.1:8000/v1/predict \
 
 `risk_probability` 是校准后的概率（可直接按字面理解），`raw_probability` 是模型原始输出，供追溯。
 
+> **`/docs` 不依赖外网。** FastAPI 默认从 `cdn.jsdelivr.net` 拉 swagger-ui，答辩现场断网就是一片空白；
+> 本仓库把 js/css 内置在 `src/mooc_dropout/api/static/vendor/`，`app.py` 检测到存在就改用本地路径。
+> 顺带修了 Windows 注册表把 `.css` 映射成 `application/x-css` 导致样式被浏览器丢弃的问题
+> （`mimetypes.add_type("text/css", ".css")`）。两条约束都有测试兜着：`tests/test_docs_ui.py`。
+
 ## 6. 文档索引
 
 | 文档 | 内容 |
@@ -229,9 +240,13 @@ curl -X POST http://127.0.0.1:8000/v1/predict \
 | [docs/10-论文大纲与图表清单.md](docs/10-论文大纲与图表清单.md) | 章节结构、图表清单、写作排期（含规划/实际字数对照） |
 | [docs/11-数据获取与接入指南.md](docs/11-数据获取与接入指南.md) | 真实数据下载、放置、验收与踩坑 |
 | [docs/12-原型演示脚本.md](docs/12-原型演示脚本.md) | 现场演示动线：点哪里、看到什么数、说什么话、七个追问 |
+| [docs/13-用户手册-V1.0.docx](docs/13-用户手册-V1.0.docx) | 交付用的使用手册：安装、启动、单条/批量预测、名单导出、双模型切换 |
+| [db/schema.sql](db/schema.sql) | 等价关系模型：8 张表 + 44 维特征字典 + 样本数据（MySQL 8.0 可直接导入） |
 
 ## 7. 数据与合规说明
 
 - 使用公开学术数据集 KDD Cup 2015（XuetangX），不含真实身份信息，`username` 为脱敏 ID；
 - 仓库不提交原始数据与模型产物（`.gitignore` 已配置）；
-- 真实密钥只通过环境变量注入，仓库仅保留 `.env.example`。
+- 真实密钥只通过环境变量注入，仓库仅保留 `.env.example`；
+- 代码以 MIT 许可发布，论文与文档版权归作者；`api/static/vendor/` 下的 Swagger UI 为 Apache-2.0，
+  许可全文与三方声明见该目录的 `LICENSE-Apache-2.0.txt` 与 `THIRD_PARTY_NOTICES.md`。
