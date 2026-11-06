@@ -1,6 +1,6 @@
 # MOOC 辍学风险预测（代价敏感 CatBoost）
 
-[![CI](https://github.com/liaoxiangao123/mooc-dropout/actions/workflows/ci.yml/badge.svg)](https://github.com/liaoxiangao123/mooc-dropout/actions/workflows/ci.yml)　[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 > 毕业设计原型系统：基于 KDD Cup 2015（学堂在线）学习行为数据，预测选课学习者的辍学风险。
 > 核心不是「把 AUC 刷高」，而是**把预测准确升级为决策代价最小**。
