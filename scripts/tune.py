@@ -54,13 +54,13 @@ def _rel(path: object) -> str:
         return str(path).replace("\\", "/")
 sys.path.insert(0, str(ROOT / "src"))
 
-from mooc_dropout.config import get_settings                      # noqa: E402
-from mooc_dropout.data.loader import load_kdd_cup                 # noqa: E402
+from mooc_dropout.config import get_settings  # noqa: E402
+from mooc_dropout.data.loader import load_kdd_cup  # noqa: E402
 from mooc_dropout.evaluation.cost import CostMatrix, cost_optimal_threshold  # noqa: E402
 from mooc_dropout.evaluation.metrics import classification_metrics  # noqa: E402
 from mooc_dropout.models.calibration import ProbabilityCalibrator  # noqa: E402
-from mooc_dropout.models.registry import build_model              # noqa: E402
-from mooc_dropout.training.trainer import TrainConfig, Trainer     # noqa: E402
+from mooc_dropout.models.registry import build_model  # noqa: E402
+from mooc_dropout.training.trainer import TrainConfig, Trainer  # noqa: E402
 
 OUT_DIR = ROOT / "reports" / "optuna"
 REPORT_MD = ROOT / "reports" / "调参实验-E9.md"
@@ -306,7 +306,7 @@ def main() -> int:
                 calibration=args.calibration, trial=trial,
             )
         except _Pruned:
-            raise TrialPruned()
+            raise TrialPruned() from None
         for key, value in result.items():
             trial.set_user_attr(key, value)
         return result["per_student_cost"]

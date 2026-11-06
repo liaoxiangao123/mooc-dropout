@@ -76,7 +76,7 @@ class Settings(BaseSettings):
         return value
 
     @model_validator(mode="after")
-    def _check_env_specific(self) -> "Settings":
+    def _check_env_specific(self) -> Settings:
         if self.env == "prod" and "*" in self.cors_origin_list:
             raise ValueError("生产环境禁止使用通配符 CORS 来源")
         if self.cost_fp > self.cost_fn:

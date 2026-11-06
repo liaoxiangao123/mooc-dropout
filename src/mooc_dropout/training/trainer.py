@@ -53,7 +53,7 @@ class TrainConfig:
     calibration: str = "none"
 
     @classmethod
-    def from_settings(cls, settings: Settings, **overrides) -> "TrainConfig":
+    def from_settings(cls, settings: Settings, **overrides) -> TrainConfig:
         base = cls(
             seed=settings.random_seed,
             cost_fn=settings.cost_fn,
@@ -216,7 +216,7 @@ class Trainer:
             dtype="float64",
         )
 
-        for fold, (tr_idx, va_idx) in enumerate(
+        for _fold, (tr_idx, va_idx) in enumerate(
             oof_group_splits(
                 data.train_enrollments, n_splits=self.config.n_splits, seed=self.config.seed
             )

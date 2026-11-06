@@ -70,7 +70,7 @@ class ProbabilityCalibrator:
     def label(self) -> str:
         return _LABELS[self.method]
 
-    def fit(self, oof_prob, y_true) -> "ProbabilityCalibrator":
+    def fit(self, oof_prob, y_true) -> ProbabilityCalibrator:
         """在训练集 OOF 预测上拟合。测试集不得参与。"""
         prob = np.asarray(oof_prob, dtype="float64")
         y = np.asarray(y_true).astype(int)
@@ -147,7 +147,7 @@ class ProbabilityCalibrator:
         return path
 
     @classmethod
-    def load(cls, path: str | Path) -> "ProbabilityCalibrator":
+    def load(cls, path: str | Path) -> ProbabilityCalibrator:
         import joblib
 
         return joblib.load(Path(path))

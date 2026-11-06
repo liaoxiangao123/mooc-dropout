@@ -10,9 +10,10 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -22,9 +23,9 @@ from ..data.split import oof_group_splits
 from ..errors import DataQualityError
 from ..evaluation.cost import CostMatrix, cost_optimal_threshold
 from ..evaluation.metrics import classification_metrics
-from ..models.registry import build_model
 from ..logging_config import get_logger
-from .trainer import PreparedData, TrainConfig, Trainer
+from ..models.registry import build_model
+from .trainer import TrainConfig, Trainer
 
 logger = get_logger(__name__)
 

@@ -38,7 +38,7 @@ def risk_level(probability: float, threshold: float) -> str:
 
 
 def summarize_risk_bands(levels: list[str]) -> dict[str, int]:
-    counts = {level: 0 for level in RISK_LEVELS}
+    counts = dict.fromkeys(RISK_LEVELS, 0)
     for level in levels:
         counts[level] = counts.get(level, 0) + 1
     return counts

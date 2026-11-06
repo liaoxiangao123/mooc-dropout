@@ -235,7 +235,7 @@ def fig_importance(settings) -> Path:
 def main() -> int:
     parser = argparse.ArgumentParser(description="生成论文图 5-1 ~ 5-4")
     parser.add_argument("--data-dir", type=Path, default=ROOT / "data" / "synthetic")
-    args = parser.parse_args()
+    parser.parse_args()  # 只为校验参数，本脚本不取任何值
 
     setup_font()
     FIG_DIR.mkdir(parents=True, exist_ok=True)

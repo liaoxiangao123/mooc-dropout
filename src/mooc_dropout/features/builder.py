@@ -27,7 +27,7 @@ class FeatureConfig:
     session_gap_minutes: int = 30
 
     @classmethod
-    def from_settings(cls, settings) -> "FeatureConfig":
+    def from_settings(cls, settings) -> FeatureConfig:
         return cls(
             window_days=settings.feature_window_days,
             decay_lambda=settings.decay_lambda,
@@ -50,7 +50,7 @@ class FeatureBuilder:
         self.is_fitted_: bool = False
 
     # ---- 训练侧 ----
-    def fit(self, logs: pd.DataFrame) -> "FeatureBuilder":
+    def fit(self, logs: pd.DataFrame) -> FeatureBuilder:
         validated = validate_logs(logs)
         if validated.empty:
             raise ValidationFailure("训练日志为空")
@@ -118,5 +118,5 @@ class FeatureBuilder:
         return path
 
     @staticmethod
-    def load(path: str | Path) -> "FeatureBuilder":
+    def load(path: str | Path) -> FeatureBuilder:
         return joblib.load(Path(path))

@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from .base import BaseRiskModel
-from .catboost_model import CATBOOST_AVAILABLE, CatBoostRiskModel
 from .baseline import SklearnRiskModel
+from .catboost_model import CATBOOST_AVAILABLE, CatBoostRiskModel
 
 MODEL_NAMES: tuple[str, ...] = ("catboost", "logreg", "random_forest", "hist_gbdt")
 

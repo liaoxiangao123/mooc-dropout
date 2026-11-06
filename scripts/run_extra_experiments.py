@@ -25,7 +25,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 import time
 from dataclasses import dataclass, field
@@ -38,14 +37,14 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from mooc_dropout.config import get_settings                      # noqa: E402
-from mooc_dropout.data.loader import load_kdd_cup                 # noqa: E402
-from mooc_dropout.evaluation.cost import (                        # noqa: E402
+from mooc_dropout.config import get_settings  # noqa: E402
+from mooc_dropout.data.loader import load_kdd_cup  # noqa: E402
+from mooc_dropout.evaluation.cost import (  # noqa: E402
     CostMatrix,
     cost_optimal_threshold,
 )
 from mooc_dropout.evaluation.metrics import classification_metrics  # noqa: E402
-from mooc_dropout.training.trainer import TrainConfig, Trainer      # noqa: E402
+from mooc_dropout.training.trainer import TrainConfig, Trainer  # noqa: E402
 
 DATA_DIR = ROOT / "data" / "synthetic"
 REPORT_DIR = ROOT / "reports"

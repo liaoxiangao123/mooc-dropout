@@ -128,11 +128,8 @@ def capacity_for_recall(curve: pd.DataFrame, target_recall: float) -> dict[str, 
     if not 0 < target_recall < 1:
         raise ValueError("target_recall 必须在 (0, 1) 内")
     hit = curve.loc[curve["recall"] >= target_recall]
-    if hit.empty:
-        # 容量列表没覆盖到，退化为用最后一行（全报警一定满足）
-        row = curve.iloc[-1]
-    else:
-        row = hit.iloc[0]
+    # 容量列表没覆盖到时退化为最后一行（全报警一定满足召回率）
+    row = curve.iloc[-1] if hit.empty else hit.iloc[0]
     return {
         "capacity": float(row["capacity"]),
         "n_alerted": int(row["n_alerted"]),

@@ -20,7 +20,7 @@ class BaseRiskModel(ABC):
     supports_categorical: bool = False
 
     @abstractmethod
-    def fit(self, X: pd.DataFrame, y: np.ndarray) -> "BaseRiskModel":
+    def fit(self, X: pd.DataFrame, y: np.ndarray) -> BaseRiskModel:
         """训练；X 的列顺序必须与训练时一致。"""
 
     @abstractmethod
@@ -51,7 +51,7 @@ class BaseRiskModel(ABC):
         return path
 
     @staticmethod
-    def load(path: str | Path) -> "BaseRiskModel":
+    def load(path: str | Path) -> BaseRiskModel:
         return joblib.load(Path(path))
 
     def describe(self) -> dict[str, Any]:

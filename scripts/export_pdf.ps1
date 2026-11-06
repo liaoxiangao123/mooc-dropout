@@ -23,9 +23,16 @@ $root = Split-Path -Parent $PSScriptRoot
 $docsDir = Join-Path $root "docs"
 
 if ($Docx -eq "") {
-    $cand = Get-ChildItem -Path $docsDir -Filter "*.docx" | Where-Object { $_.Name -notlike "~*" }
+    $cand = @(Get-ChildItem -Path $docsDir -Filter "*.docx" | Where-Object { $_.Name -notlike "~*" })
     if ($cand.Count -eq 0) { throw "no .docx found under docs/" }
-    $Docx = $cand[0].FullName
+    # docs/ also holds the delivered user manual (a few dozen KB). The thesis is
+    # by far the largest .docx (2 MB+), so pick by size instead of by name: the
+    # filenames are Chinese and this script must stay ASCII-only (PowerShell 5.1
+    # reads BOM-less .ps1 as ANSI, so any non-ASCII literal would be garbled).
+    $Docx = ($cand | Sort-Object -Property Length -Descending)[0].FullName
+    if ($cand.Count -gt 1) {
+        Write-Output ("note: " + $cand.Count + " .docx under docs/, picked the largest: " + (Split-Path -Leaf $Docx))
+    }
 }
 if ($Pdf -eq "") {
     $Pdf = [System.IO.Path]::ChangeExtension($Docx, ".pdf")

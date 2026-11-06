@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -79,11 +80,10 @@ class PredictionService:
         features = artifacts.builder.transform(log_frame, meta_frame)
         raw_probability = float(np.clip(artifacts.model.predict_proba(features)[0], 0.0, 1.0))
         # 有校准器就用校准后概率决策；两者都返回，便于前端区分「分数」与「概率」
-        probability = (
-            artifacts.calibrator.transform_one(raw_probability)
-            if artifacts.is_calibrated
-            else raw_probability
-        )
+        # 先取出校准器再判断：is_calibrated 还要求 method != "none"，
+        # 直接写 artifacts.calibrator.transform_one(...) 会让类型检查与运行语义脱节
+        calibrator = artifacts.calibrator if artifacts.is_calibrated else None
+        probability = (calibrator.transform_one(raw_probability) if calibrator is not None else raw_probability)
         level = risk_level(probability, artifacts.threshold)
         factors = artifacts.explainer.explain(features, top_k=top_k) if top_k > 0 else []
 

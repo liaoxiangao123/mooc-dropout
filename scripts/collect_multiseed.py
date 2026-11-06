@@ -28,9 +28,6 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from mooc_dropout.config import get_settings  # noqa: E402
-from mooc_dropout.evaluation.cost import CostMatrix  # noqa: E402
-from mooc_dropout.evaluation.metrics import classification_metrics  # noqa: E402
 from multiseed_realdata import (  # noqa: E402
     DEFAULT_ORDER,
     DEFAULT_SEEDS,
@@ -39,6 +36,10 @@ from multiseed_realdata import (  # noqa: E402
     paired,
     summarize,
 )
+
+from mooc_dropout.config import get_settings  # noqa: E402
+from mooc_dropout.evaluation.cost import CostMatrix  # noqa: E402
+from mooc_dropout.evaluation.metrics import classification_metrics  # noqa: E402
 
 
 def collect(tag: str, seeds: list[int], configs: list[str], cost_matrix: CostMatrix) -> pd.DataFrame:

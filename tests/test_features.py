@@ -11,7 +11,6 @@ from mooc_dropout.errors import DataQualityError, ValidationFailure
 from mooc_dropout.features.behavior import summarize_events
 from mooc_dropout.features.builder import (
     ALL_FEATURES,
-    CATEGORICAL_FEATURES,
     NUMERIC_FEATURES,
     FeatureBuilder,
 )

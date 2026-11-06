@@ -112,7 +112,7 @@ class SklearnRiskModel(BaseRiskModel):
             )
         return Pipeline([("prep", preprocessor), ("model", estimator)])
 
-    def fit(self, X: pd.DataFrame, y: np.ndarray) -> "SklearnRiskModel":
+    def fit(self, X: pd.DataFrame, y: np.ndarray) -> SklearnRiskModel:
         self._check_input(X)
         y = np.asarray(y).astype(int)
         if len(np.unique(y)) < 2:

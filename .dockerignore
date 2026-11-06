@@ -1,0 +1,28 @@
+# 只保留构建镜像真正需要的东西。data/ 与 artifacts/ 一律不进上下文：
+# 前者 1.2 GB，后者由 Dockerfile 在构建期重新训练。
+
+.git
+.github
+.venv
+venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+htmlcov
+catboost_info
+
+data/
+artifacts/
+reports/
+docs/
+slides/
+_scratch/
+
+*.docx
+*.pdf
+*.zip
+*.mp4
+*.pptx

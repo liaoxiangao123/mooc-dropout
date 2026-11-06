@@ -24,7 +24,6 @@ import sys
 import time
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,12 +38,13 @@ def _rel(path: object) -> str:
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from mooc_dropout.config import get_settings                      # noqa: E402
-from mooc_dropout.data.loader import load_kdd_cup                 # noqa: E402
+from run_extra_experiments import paired_bootstrap  # noqa: E402
+
+from mooc_dropout.config import get_settings  # noqa: E402
+from mooc_dropout.data.loader import load_kdd_cup  # noqa: E402
 from mooc_dropout.evaluation.cost import CostMatrix, cost_optimal_threshold  # noqa: E402
 from mooc_dropout.evaluation.metrics import classification_metrics  # noqa: E402
-from mooc_dropout.training.trainer import TrainConfig, Trainer     # noqa: E402
-from run_extra_experiments import paired_bootstrap                 # noqa: E402
+from mooc_dropout.training.trainer import TrainConfig, Trainer  # noqa: E402
 
 DEFAULT_PARAMS = {"iterations": 400, "depth": 6, "learning_rate": 0.05}
 REPORT = ROOT / "reports" / "调参验证-E9b.md"

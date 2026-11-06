@@ -87,7 +87,7 @@ class CostMatrix:
         return payload
 
     @classmethod
-    def from_settings(cls, settings) -> "CostMatrix":
+    def from_settings(cls, settings) -> CostMatrix:
         return cls(c_fn=settings.cost_fn, c_fp=settings.cost_fp)
 
 

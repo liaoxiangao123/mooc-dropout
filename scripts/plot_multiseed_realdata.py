@@ -109,7 +109,7 @@ def plot() -> Path:
         for _, r in pairs.iterrows():
             rows.append((tag, color, r["pair"], r["diff_mean"], r["ci_low"], r["ci_high"],
                          int(r["n_negative"]), int(r["n_positive"])))
-    for i, (tag, color, pair, mean, lo, hi, nneg, npos) in enumerate(rows):
+    for i, (tag, color, _pair, mean, lo, hi, _nneg, _npos) in enumerate(rows):
         offset = -0.16 if tag == "official" else 0.16
         ax.errorbar(i + offset, mean, yerr=[[mean - lo], [hi - mean]], fmt="o",
                     color=color, capsize=4, markersize=6, linewidth=1.5, zorder=3)

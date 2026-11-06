@@ -84,7 +84,7 @@ def mr(text: str, *, upright: bool = False, bold: bool = False) -> str:
     if bold:
         props.append('<m:sty m:val="b"/>')
     rpr = f"<m:rPr>{''.join(props)}</m:rPr>" if props else ""
-    return f'<m:r>{rpr}<m:t xml:space="preserve">{escape(text)}</m:t></m:r>' 
+    return f'<m:r>{rpr}<m:t xml:space="preserve">{escape(text)}</m:t></m:r>'
 
 
 def m_frac(num: str, den: str) -> str:

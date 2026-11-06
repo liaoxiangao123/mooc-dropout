@@ -12,6 +12,8 @@ course_id / username 这类高基数特征做 One-Hot，避免了维度爆炸与
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 
@@ -71,7 +73,7 @@ class CatBoostRiskModel(BaseRiskModel):
         self._categorical_features = list(categorical_features or [])
         self._cat_features: list[str] = []
         self.extra_params = extra_params
-        self.model_: "CatBoostClassifier | None" = None
+        self.model_: CatBoostClassifier | None = None
 
     @property
     def categorical_features(self) -> list[str]:
@@ -85,7 +87,7 @@ class CatBoostRiskModel(BaseRiskModel):
             cols = [c for c in X.columns if not pd.api.types.is_numeric_dtype(X[c])]
         return cols
 
-    def fit(self, X: pd.DataFrame, y: np.ndarray) -> "CatBoostRiskModel":
+    def fit(self, X: pd.DataFrame, y: np.ndarray) -> CatBoostRiskModel:
         if not CATBOOST_AVAILABLE:
             raise ModelNotReadyError(
                 "未安装 catboost，无法训练核心模型；请执行 pip install catboost"
@@ -103,7 +105,8 @@ class CatBoostRiskModel(BaseRiskModel):
             X = X.assign(**{column: X[column].astype(str)})
 
         class_weights = None
-        loss_function = "Logloss"
+        # Any：这个变量可能是 str（"Logloss"），也可能是自定义的 CostSensitiveLogloss 实例
+        loss_function: Any = "Logloss"
         if self.use_cs_loss:
             # 路线 C：代价敏感自定义目标（此时不再叠加类别权重）
             from .cost_sensitive_loss import CostSensitiveLogloss
