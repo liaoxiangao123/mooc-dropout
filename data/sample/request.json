@@ -1,0 +1,43 @@
+{
+  "enrollment_id": "E9000001",
+  "course_id": "C01",
+  "username": "u000001",
+  "events": [
+    {
+      "time": "2014-03-01T19:00:00",
+      "source": "video",
+      "event": "play_video",
+      "object": "C01_video_01"
+    },
+    {
+      "time": "2014-03-01T19:24:00",
+      "source": "video",
+      "event": "pause_video",
+      "object": "C01_video_01"
+    },
+    {
+      "time": "2014-03-02T10:12:00",
+      "source": "problem",
+      "event": "open",
+      "object": "C01_problem_01"
+    },
+    {
+      "time": "2014-03-02T10:35:00",
+      "source": "problem",
+      "event": "submit",
+      "object": "C01_problem_01"
+    },
+    {
+      "time": "2014-03-03T21:05:00",
+      "source": "discussion",
+      "event": "create_post",
+      "object": "C01_forum_01"
+    },
+    {
+      "time": "2014-03-05T08:40:00",
+      "source": "access",
+      "event": "page_close",
+      "object": "C01_page_01"
+    }
+  ]
+}

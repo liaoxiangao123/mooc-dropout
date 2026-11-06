@@ -415,6 +415,18 @@
   $("btn-list").addEventListener("click", exportList);
 
   fill(false);
+
+  // 答辩/录屏用：地址带 ?auto=1 时自动跑一遍（示例事件 -> 预测 -> 干预名单），
+  // 省去现场手点；不加参数时行为与原来完全一致。
+  const auto = new URLSearchParams(location.search).get("auto");
+  if (auto) {
+    window.addEventListener("load", async () => {
+      fill(auto === "active");
+      await run();
+      if (auto === "list") { await exportList(); }
+      document.body.dataset.autoDone = "1";
+    });
+  }
 </script>
 </body>
 </html>
