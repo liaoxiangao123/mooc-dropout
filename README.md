@@ -155,12 +155,12 @@ mooc-dropout/
 ├── scripts/                 # 生成数据 / 训练 / 实验 / 调参 / 容量与代价比分析 / 启动
 ├── tests/                   # 126 个自动化测试用例（含 /docs 本地化 11 条）
 ├── requirements.lock.txt    # 实测通过的精确版本（复现用）
-├── docs/                    # 13 份项目文档（00~12）+ 论文初稿（md/docx/pdf）与 16 张插图
+├── docs/                    # 14 份项目文档（00~13，13 为用户手册）+ 论文初稿（md/docx/pdf）与 16 张插图
 ├── artifacts/               # 模型产物（不提交：体积大，可用脚本重生成）
 ├── db/schema.sql            # 等价关系模型：8 张表 + 44 维特征字典（迁移起点，非运行依赖）
 ├── data/sample/request.json # 可直接 POST 的请求样例（/v1/predict 用）
 ├── Dockerfile               # 一条 docker run 出可访问的演示环境（内含合成模型）
-├── .github/workflows/ci.yml # CI：ruff + mypy + 全量测试 + 起服务打接口
+├── .github/workflows/ci.yml # CI：ruff + mypy + 全量测试 + 起服务打接口（待 token 补齐 workflow 权限后入库）
 └── reports/                 # 指标与实验台账（csv/json 与手写报告已提交，
                              #   只忽略 *.png 与 coverage/ —— 论文里的数字要能对着仓库查）
 ```
