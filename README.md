@@ -1,5 +1,6 @@
 # MOOC 辍学风险预测（代价敏感 CatBoost）
 
+[![CI](https://github.com/liaoxiangao123/mooc-dropout/actions/workflows/ci.yml/badge.svg)](https://github.com/liaoxiangao123/mooc-dropout/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 > 毕业设计原型系统：基于 KDD Cup 2015（学堂在线）学习行为数据，预测选课学习者的辍学风险。
@@ -160,7 +161,7 @@ mooc-dropout/
 ├── db/schema.sql            # 等价关系模型：8 张表 + 44 维特征字典（迁移起点，非运行依赖）
 ├── data/sample/request.json # 可直接 POST 的请求样例（/v1/predict 用）
 ├── Dockerfile               # 一条 docker run 出可访问的演示环境（内含合成模型）
-├── .github/workflows/ci.yml # CI：ruff + mypy + 全量测试 + 起服务打接口（待 token 补齐 workflow 权限后入库）
+├── .github/workflows/ci.yml # CI：ruff + mypy + 覆盖率门 + 起真服务打 7 个端点（run #1 已全绿）
 └── reports/                 # 指标与实验台账（csv/json 与手写报告已提交，
                              #   只忽略 *.png 与 coverage/ —— 论文里的数字要能对着仓库查）
 ```
