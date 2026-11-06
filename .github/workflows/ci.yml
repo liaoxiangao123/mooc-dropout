@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: pytest + ruff (py3.13)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements.lock.txt
+
+      # 用 lock 里的精确版本：论文数字是在这套版本上跑出来的，CI 也该用同一套
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.lock.txt
+          # 工具版本按本地那一轮全绿的版本钉死，免得上游一升级 CI 就红
+          pip install "pytest==9.2.0" pytest-cov httpx "ruff==0.17.4" "mypy==2.4.1"
+
+      - name: 代码风格
+        run: ruff check src scripts tests
+
+      - name: 类型检查
+        run: mypy
+
+      - name: 单元测试
+        run: pytest -q --cov=mooc_dropout --cov-report=term-missing --cov-fail-under=85
+
+  smoke:
+    name: 训练并起服务打一遍接口
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements.lock.txt
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.lock.txt
+
+      # 整条链路必须放在同一个 step 里：Actions 每个 step 结束会回收进程组，
+      # 上一步起的后台服务到下一步就没了。
+      - name: 训练 → 起服务 → 7 个端点 → 单条预测
+        run: |
+          set -euo pipefail
+
+          python scripts/train.py --auto-synthetic --iterations 120 --n-splits 3
+          test -f artifacts/model/metadata.json
+
+          python scripts/serve.py --host 127.0.0.1 --port 8000 > serve.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+
+          ready=0
+          for _ in $(seq 1 60); do
+            if curl -fsS -m 2 http://127.0.0.1:8000/ready >/dev/null 2>&1; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then echo "服务未就绪，日志如下："; cat serve.log; exit 1; fi
+
+          curl -fsS http://127.0.0.1:8000/health >/dev/null
+          curl -fsS http://127.0.0.1:8000/ready >/dev/null
+          curl -fsS http://127.0.0.1:8000/v1/model/info >/dev/null
+          curl -fsS http://127.0.0.1:8000/v1/model/features >/dev/null
+          curl -fsS http://127.0.0.1:8000/docs | grep -q '/static/vendor/swagger-ui-bundle.js'
+          curl -fsS http://127.0.0.1:8000/ | grep -q 'MOOC'
+
+          curl -fsS -X POST http://127.0.0.1:8000/v1/predict \
+            -H 'Content-Type: application/json' \
+            -d @data/sample/request.json -o resp.json
+          # 用独立脚本文件而不是 python -c：-c 的多行串会把缩进写到第 0 列，
+          # 直接把外层 run: | 的块标量截断，YAML 就解析失败了
+          cat > check_resp.py <<'EOF'
+          import json
+
+          d = json.load(open('resp.json'))
+          assert 0 <= d['risk_probability'] <= 1, d
+          assert d['decision_threshold'] > 0, d
+          assert d['risk_level'] in ('low', 'medium', 'high'), d
+          print('predict ok:', d['risk_probability'], d['risk_level'], d['decision_threshold'])
+          EOF
+          python check_resp.py
+
+          # Windows 上 .css 被注册表映射成 application/x-css 会让浏览器丢样式表，
+          # 这里顺手断言服务端返回的是标准 text/css
+          ctype=$(curl -fsS http://127.0.0.1:8000/static/vendor/swagger-ui.css -o /dev/null -w '%{content_type}')
+          echo "css content-type: $ctype"
+          case "$ctype" in
+            text/css*) ;;
+            *) echo "意外的 Content-Type: $ctype"; exit 1 ;;
+          esac
